@@ -1,12 +1,19 @@
 @import "tailwindcss";
 
-/* ── Futura Heavy: self-hosted, single weight. Every display size renders Heavy
-   regardless of the weight we ask for — so never rely on weight for hierarchy
-   in display type. Use size, tracking, and color instead. ─────────────────── */
+/* ── The display face is Futura BOLD. It is not in the repo and cannot be — the
+   only Futura Bold on this machine is the licensed system copy, which we are not
+   free to extract and serve. So we ask for the installed face by name first, and
+   fall back to the self-hosted Heavy weight for anyone who does not have it.
+   Bold and Heavy differ in stroke weight but share the geometry, so the fallback
+   sets the same rhythm rather than reflowing the layout. ──────────────────── */
 @font-face {
-  font-family: "Futura Heavy";
-  src: url("/fonts/futura-heavy.otf") format("opentype");
-  font-weight: 400 900;
+  font-family: "Futura Display";
+  src:
+    local("Futura Bold"),
+    local("Futura-Bold"),
+    local("FuturaBT-Bold"),
+    url("/fonts/futura-heavy.otf") format("opentype");
+  font-weight: 700;
   font-style: normal;
   font-display: swap;
 }
@@ -70,7 +77,7 @@
   --color-aqua: #00e5c0;
   --color-on-aqua: #06251f;
 
-  --font-display: "Futura Heavy", "Futura", "Century Gothic", sans-serif;
+  --font-display: "Futura Display", "Futura", "Century Gothic", sans-serif;
   --font-body: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 
   /* Subtle, not pillowy. */
@@ -125,9 +132,12 @@ body::before {
   color: rgba(255, 255, 255, 0.5);
 }
 
-/* Display type: geometric, tight, uppercase. The Olympic-signage register. */
+/* Display type: geometric, tight, uppercase. The Olympic-signage register.
+   The weight is declared, not inherited — the face is only cut at 700, so any
+   other value would leave the browser free to synthesize a fake bold. */
 .display {
   font-family: var(--font-display);
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.01em;
 }
@@ -147,6 +157,7 @@ body::before {
 /* The rating figure itself. Optical tightening at display size. */
 .figure {
   font-family: var(--font-display);
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
   line-height: 0.85;

@@ -125,7 +125,19 @@ export function Trend({
         caretSize: 4,
         callbacks: {
           title: () => "",
-          label: (item) => (item.parsed.y as number).toFixed(3),
+          /* The rating AND what the match moved it by. The delta is the reason
+             anyone hovers a rating chart — "5.302" alone is already printed in
+             48pt above the chart, so repeating it is the only useless thing the
+             tooltip could say. The first point has no predecessor, so it is
+             labelled as the starting position rather than a change of +0.000. */
+          label: (item) => {
+            const i = item.dataIndex;
+            const v = item.parsed.y as number;
+            if (i === 0) return [v.toFixed(3), "starting rating"];
+            const d = v - points[i - 1];
+            const sign = d > 0 ? "+" : d < 0 ? "−" : "±";
+            return [v.toFixed(3), `${sign}${Math.abs(d).toFixed(3)} this match`];
+          },
         },
       },
     },

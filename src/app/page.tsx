@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { RatingRail } from "@/components/rating-rail";
 import { Trend } from "@/components/trend-chart";
 import { ArrowUpIcon, ArrowDownIcon, ChevronIcon, PlusIcon, PinIcon } from "@/components/icons";
 import {
@@ -126,23 +125,18 @@ export default function Home() {
                 <div className="figure text-[76px] text-cobalt lg:text-[96px]">{fmt(rating)}</div>
 
                 {rated && (
-                  <div className="mb-2 flex flex-col gap-1.5 lg:mb-3">
-                    <span
-                      className={`inline-flex items-center gap-1 self-start rounded-[8px] px-1.5 py-1 text-[11px] font-semibold tabular-nums lg:text-[12px] ${
-                        delta >= 0
-                          ? "bg-aqua/25 text-aqua-ink"
-                          : "bg-loss/10 text-loss"
-                      }`}
-                    >
-                      {delta >= 0 ? (
-                        <ArrowUpIcon className="h-3 w-3" />
-                      ) : (
-                        <ArrowDownIcon className="h-3 w-3" />
-                      )}
-                      {fmtDelta(delta)}
-                    </span>
-                    <Trend points={TREND} className="h-6 w-20 lg:h-8 lg:w-28" />
-                  </div>
+                  <span
+                    className={`mb-3 inline-flex items-center gap-1 rounded-[8px] px-1.5 py-1 text-[11px] font-semibold tabular-nums lg:mb-4 lg:text-[12px] ${
+                      delta >= 0 ? "bg-aqua/25 text-aqua-ink" : "bg-loss/10 text-loss"
+                    }`}
+                  >
+                    {delta >= 0 ? (
+                      <ArrowUpIcon className="h-3 w-3" />
+                    ) : (
+                      <ArrowDownIcon className="h-3 w-3" />
+                    )}
+                    {fmtDelta(delta)}
+                  </span>
                 )}
               </div>
 
@@ -159,11 +153,16 @@ export default function Home() {
                     )}
                   </div>
 
-                  <RatingRail
-                    rating={rating}
-                    reliability={ME.reliability}
-                    className="mt-7 lg:mt-9"
-                  />
+                  {/* The trajectory, hoverable: each point reports the rating and
+                      what that match moved it by. The old sparkline beside the
+                      figure is gone — it plotted this same series, unreadably. */}
+                  <div className="mt-6 lg:mt-7">
+                    <div className="flex items-center justify-between">
+                      <div className="label">Last {TREND.length} Matches</div>
+                      <div className="text-[11px] text-faint">Hover a point for the change</div>
+                    </div>
+                    <Trend points={TREND} interactive className="mt-3 h-32 w-full lg:h-40" />
+                  </div>
 
                   {/* Reliability, stated plainly. The old app buried this, but it
                       is the difference between a rating you can enter a
