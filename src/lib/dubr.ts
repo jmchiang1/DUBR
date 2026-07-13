@@ -76,16 +76,42 @@ export type Player = {
   club?: string;
 };
 
+/**
+ * A match is a record of what happened to FOUR ratings, not just yours.
+ *
+ * Every player on court carries their rating into the match and a different one
+ * out of it, so each one is listed with the rating they held and the direction
+ * it moved. That is the whole claim of a rating system — one result, every
+ * participant repriced — and a card that only shows your own delta hides it.
+ */
+export type MatchPlayer = {
+  name: string;
+  /** The rating they held going in. null = unrated at the time. */
+  rating: number | null;
+  /** Which way this match moved them. */
+  delta: number;
+  /** Is this the account holder? */
+  me?: boolean;
+};
+
+export type MatchSide = {
+  players: MatchPlayer[];
+  /** Score per game, parallel across the two sides. */
+  games: number[];
+};
+
 export type Match = {
   id: string;
+  /** The session or tournament this was played in. */
+  event: string;
   date: string;
+  location: string;
   discipline: Discipline;
-  partner?: string;
-  opponents: string[];
-  games: [number, number][];
+  mine: MatchSide;
+  theirs: MatchSide;
   won: boolean;
+  /** The account holder's rating change. */
   delta: number;
-  venue: string;
 };
 
 /* ── Mock data ─────────────────────────────────────────────────────────── */
@@ -251,73 +277,106 @@ export const PLAYERS: Player[] = [
 export const MATCHES: Match[] = [
   {
     id: "m1",
-    date: "Jul 09",
+    event: "Kotofit LIC — Tuesday Open Play",
+    date: "07/09/2026",
+    location: "Long Island City, NY",
     discipline: "doubles",
-    partner: "Sarah Tanaka",
-    opponents: ["Brian Law", "Owen Zhang"],
-    games: [
-      [21, 18],
-      [19, 21],
-      [21, 16],
-    ],
     won: true,
     delta: 0.061,
-    venue: "Kotofit LIC",
+    mine: {
+      games: [21, 19, 21],
+      players: [
+        { name: "Jonathan Chiang", rating: 5.417, delta: 0.061, me: true },
+        { name: "Sarah Tanaka", rating: 5.39, delta: 0.054 },
+      ],
+    },
+    theirs: {
+      games: [18, 21, 16],
+      players: [
+        { name: "Brian Law", rating: 5.611, delta: -0.048 },
+        { name: "Owen Zhang", rating: 5.042, delta: -0.057 },
+      ],
+    },
   },
   {
     id: "m2",
-    date: "Jul 02",
+    event: "Kotofit JC — Singles Ladder",
+    date: "07/02/2026",
+    location: "Jersey City, NJ",
     discipline: "singles",
-    opponents: ["Kevin Cheng"],
-    games: [
-      [17, 21],
-      [21, 19],
-      [15, 21],
-    ],
     won: false,
     delta: -0.024,
-    venue: "Kotofit JC",
+    mine: {
+      games: [17, 21, 15],
+      players: [{ name: "Jonathan Chiang", rating: 5.326, delta: -0.024, me: true }],
+    },
+    theirs: {
+      games: [21, 19, 21],
+      players: [{ name: "Kevin Cheng", rating: 5.932, delta: 0.019 }],
+    },
   },
   {
     id: "m3",
-    date: "Jun 28",
+    event: "Kotofit Flushing — Saturday Doubles",
+    date: "06/28/2026",
+    location: "Flushing, NY",
     discipline: "doubles",
-    partner: "Jun Jie Zhang",
-    opponents: ["Mecream Osathanugrah", "Shuang Wei"],
-    games: [
-      [21, 23],
-      [18, 21],
-    ],
     won: false,
     delta: -0.009,
-    venue: "Kotofit Flushing",
+    mine: {
+      games: [21, 18],
+      players: [
+        { name: "Jonathan Chiang", rating: 5.335, delta: -0.009, me: true },
+        { name: "Jun Jie Zhang", rating: 5.203, delta: -0.012 },
+      ],
+    },
+    theirs: {
+      games: [23, 21],
+      players: [
+        { name: "Mecream Osathanugrah", rating: 6.241, delta: 0.006 },
+        { name: "Shuang Wei", rating: 5.72, delta: 0.008 },
+      ],
+    },
   },
   {
     id: "m4",
-    date: "Jun 21",
+    event: "Kotofit LIC — Tuesday Open Play",
+    date: "06/21/2026",
+    location: "Long Island City, NY",
     discipline: "doubles",
-    partner: "Amal Shaj",
-    opponents: ["Sarah Tanaka", "Owen Zhang"],
-    games: [
-      [21, 14],
-      [21, 17],
-    ],
     won: true,
     delta: 0.048,
-    venue: "Kotofit LIC",
+    mine: {
+      games: [21, 21],
+      players: [
+        { name: "Jonathan Chiang", rating: 5.287, delta: 0.048, me: true },
+        { name: "Amal Shaj", rating: 4.803, delta: 0.071 },
+      ],
+    },
+    theirs: {
+      games: [14, 17],
+      players: [
+        { name: "Sarah Tanaka", rating: 5.39, delta: -0.039 },
+        { name: "Owen Zhang", rating: 5.042, delta: -0.044 },
+      ],
+    },
   },
   {
     id: "m5",
-    date: "Jun 14",
+    event: "Kotofit LIC — Singles Ladder",
+    date: "06/14/2026",
+    location: "Long Island City, NY",
     discipline: "singles",
-    opponents: ["Owen Zhang"],
-    games: [
-      [21, 12],
-      [21, 15],
-    ],
     won: true,
     delta: 0.033,
-    venue: "Kotofit LIC",
+    mine: {
+      games: [21, 21],
+      players: [{ name: "Jonathan Chiang", rating: 5.254, delta: 0.033, me: true }],
+    },
+    theirs: {
+      games: [12, 15],
+      players: [{ name: "Owen Zhang", rating: 4.977, delta: -0.041 }],
+    },
   },
 ];
 

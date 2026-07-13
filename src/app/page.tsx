@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Trend } from "@/components/trend-chart";
+import { MatchCard } from "@/components/match-card";
 import { ArrowUpIcon, ArrowDownIcon, ChevronIcon, PinIcon, PlusIcon } from "@/components/icons";
 import {
   ME,
@@ -192,12 +193,12 @@ export default function Home() {
         </section>
       </div>
 
-      {/* ── RECENT MATCHES ────────────────────────────────────────────────── */}
-      <section
-        className="rise overflow-hidden rounded-[14px] bg-surface"
-        style={{ animationDelay: "140ms" }}
-      >
-        <div className="flex items-center justify-between px-5 py-4 lg:px-6 lg:py-5">
+      {/* ── RECENT MATCHES ────────────────────────────────────────────────
+          Cards, not rows. Each one shows every player on court with the rating
+          they carried in and the direction it moved — a match reprices all four
+          people, and the old one-line-per-match view hid that entirely. */}
+      <section className="rise" style={{ animationDelay: "140ms" }}>
+        <div className="mb-3 flex items-center justify-between px-1">
           <h2 className="display text-[15px] lg:text-[17px]">Recent Matches</h2>
           <Link
             href="/log"
@@ -208,43 +209,11 @@ export default function Home() {
           </Link>
         </div>
 
-        <ul className="divide-y divide-line border-t border-line">
+        <div className="grid gap-3 lg:grid-cols-2 lg:gap-4">
           {MATCHES.map((m) => (
-            <li key={m.id}>
-              <div className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-elevated/40 lg:px-6">
-                <span
-                  className={`display grid h-9 w-9 shrink-0 place-items-center rounded-full text-[11px] ${
-                    m.won ? "bg-aqua text-on-aqua" : "bg-elevated text-mute"
-                  }`}
-                >
-                  {m.won ? "W" : "L"}
-                </span>
-
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-[13px] text-bone">
-                    {m.partner && <span className="text-mute">with {m.partner} · </span>}
-                    vs {m.opponents.join(" / ")}
-                  </div>
-                  <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-faint">
-                    <span className="tabular-nums">
-                      {m.games.map((g) => `${g[0]}–${g[1]}`).join("  ")}
-                    </span>
-                    <span>·</span>
-                    <span>{m.date}</span>
-                  </div>
-                </div>
-
-                <span
-                  className={`shrink-0 text-[12px] font-semibold tabular-nums ${
-                    m.delta >= 0 ? "text-aqua" : "text-loss"
-                  }`}
-                >
-                  {fmtDelta(m.delta)}
-                </span>
-              </div>
-            </li>
+            <MatchCard key={m.id} match={m} />
           ))}
-        </ul>
+        </div>
       </section>
     </div>
   );
