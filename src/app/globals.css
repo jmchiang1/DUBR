@@ -1,0 +1,129 @@
+@import "tailwindcss";
+
+/* ── Futura Heavy: self-hosted, single weight. Every display size renders Heavy
+   regardless of the weight we ask for — so never rely on weight for hierarchy
+   in display type. Use size, tracking, and color instead. ─────────────────── */
+@font-face {
+  font-family: "Futura Heavy";
+  src: url("/fonts/futura-heavy.otf") format("opentype");
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  /* Surfaces — three real levels. Canvas < card < inset. Hierarchy comes from
+     this ramp, not from borders and shadows piled onto identical rectangles. */
+  --color-ink: #161616;
+  --color-surface: #18181b;
+  --color-elevated: #27272a;
+  --color-line: #3f3f46;
+
+  /* Text */
+  --color-bone: #ffffff;
+  --color-mute: #a1a1aa;
+  --color-faint: #6b6b74;
+
+  /* Brand */
+  --color-cobalt: #22239d;
+  --color-cobalt-hi: #2e2fd1;
+  --color-cobalt-lo: #14156b;
+
+  /* Aqua — SCARCE. Three jobs only: positive delta, active nav, primary action.
+     Never a decorative fill, never body text, never a background wash. */
+  --color-aqua: #00e5c0;
+  --color-aqua-ink: #4ff0d6;
+  --color-on-aqua: #06251f;
+
+  --color-loss: #f4634e;
+
+  --font-display: "Futura Heavy", "Futura", "Century Gothic", sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  /* Subtle, not pillowy. */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+}
+
+* {
+  border-color: var(--color-line);
+}
+
+html {
+  background: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: var(--color-ink);
+  color: var(--color-bone);
+  font-family: var(--font-body);
+  /* Every number in this app is a measurement — they must align in columns and
+     never shift width as they tick. */
+  font-variant-numeric: tabular-nums;
+}
+
+/* Display type: geometric, tight, uppercase. The Olympic-signage register. */
+.display {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+
+/* Small-caps label — used for every stat caption so the eye learns a single
+   shape for "this is a label, not a value". */
+.label {
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  color: var(--color-faint);
+}
+
+/* The rating figure itself. Optical tightening at display size. */
+.figure {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 0.85;
+}
+
+/* Faint engineering grid — makes the canvas read as measurement substrate
+   (graph paper) rather than a flat void. Barely perceptible by design. */
+.substrate {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+::selection {
+  background: var(--color-aqua);
+  color: var(--color-on-aqua);
+}
