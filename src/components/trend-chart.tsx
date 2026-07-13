@@ -22,12 +22,16 @@ Chart.register(LineController, LineElement, PointElement, LinearScale, Filler, T
     (`[data-theme="dark"]`) repaints the canvas, which cannot inherit CSS. */
 type Palette = { gain: string; loss: string; surface: string; ink: string; line: string };
 
+/* `surface` and `ink` here are the TOOLTIP's fill and text, not the app's card
+   tokens — the app's --surface is a translucent white that would be invisible as
+   tooltip text, and --bone is white, which would make the tooltip a white box.
+   The tooltip is drawn on the dark canvas colour with white text instead. */
 const LIGHT: Palette = {
-  gain: "#00806b",
-  loss: "#c2410c",
+  gain: "#00e5c0",
+  loss: "#ff3d5a",
   surface: "#ffffff",
-  ink: "#18181b",
-  line: "#e2e2e5",
+  ink: "#000c43",
+  line: "rgba(255,255,255,0.16)",
 };
 
 function usePalette(): Palette {
@@ -41,8 +45,8 @@ function usePalette(): Palette {
       setPalette({
         gain: v("--aqua-ink", LIGHT.gain),
         loss: v("--loss", LIGHT.loss),
-        surface: v("--surface", LIGHT.surface),
-        ink: v("--bone", LIGHT.ink),
+        surface: LIGHT.surface,
+        ink: v("--ink", LIGHT.ink),
         line: v("--line", LIGHT.line),
       });
     };
@@ -57,6 +61,55 @@ function usePalette(): Palette {
   }, []);
 
   return palette;
+}
+
+/**
+ * The context Chart.js hands to a per-element animation callback. It ships
+ * `ScriptableContext` for scales and elements, but the ANIMATION context is a
+ * different object it does not export a type for — it carries `index`/`type`
+ * (not `dataIndex`), and it is the same mutable object across frames, which is
+ * what lets the draw below latch a `started` flag onto it.
+ */
+type DrawContext = {
+  type: string;
+  index: number;
+  datasetIndex: number;
+  chart: Chart;
+  xStarted?: boolean;
+  yStarted?: boolean;
+};
+
+type Animations = {
+  x: {
+    type: "number";
+    easing: "linear";
+    duration: number;
+    from: number;
+    delay: (ctx: DrawContext) => number;
+  };
+  y: {
+    type: "number";
+    easing: "easeOutQuart";
+    duration: number;
+    from: (ctx: DrawContext) => number;
+    delay: (ctx: DrawContext) => number;
+  };
+};
+
+/** The canvas cannot inherit the `prefers-reduced-motion` rule in globals.css —
+    CSS does not reach inside it — so the chart has to ask for itself. */
+function useReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReduced(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+
+  return reduced;
 }
 
 /** rgba() from a hex, so the area fill can be the line color at low alpha
@@ -87,12 +140,16 @@ export function Trend({
   points,
   className = "",
   interactive = false,
+  delay = 0,
 }: {
   points: number[];
   className?: string;
   interactive?: boolean;
+  /** Hold the draw until the card it lives on has finished its `.rise`. */
+  delay?: number;
 }) {
   const palette = usePalette();
+  const reducedMotion = useReducedMotion();
   const up = points[points.length - 1] >= points[0];
   const color = up ? palette.gain : palette.loss;
 
@@ -102,9 +159,65 @@ export function Trend({
   const max = Math.max(...points);
   const pad = (max - min || 0.1) * 0.35;
 
+  /* The line DRAWS ITSELF, left to right, one match at a time — the chart is a
+     history, so it is built in the order the history happened. Chart.js's default
+     line animation instead lifts every point from the baseline at once, which at
+     sparkline size reads as a flicker rather than as motion.
+
+     Each point animates its own x and y, offset by its index, so the leading edge
+     advances across the canvas and the fill sweeps in beneath it. `from: NaN` on x
+     is the mechanism: a point with no x yet is not drawn at all, so the line has a
+     genuine end rather than being revealed under a mask. */
+  const step = 620 / Math.max(points.length - 1, 1);
+
+  const previousY = (ctx: DrawContext) =>
+    ctx.index === 0
+      ? ctx.chart.scales.y.getPixelForValue(points[0])
+      : ctx.chart
+          .getDatasetMeta(ctx.datasetIndex)
+          .data[ctx.index - 1].getProps(["y"], true).y;
+
+  /* The `started` flags latch per element: Chart.js re-evaluates `delay` on every
+     frame, so without the latch each point would keep re-queuing its own delay and
+     the line would never finish arriving. */
+  const draw: Animations = {
+    x: {
+      type: "number",
+      easing: "linear",
+      duration: step,
+      from: NaN,
+      delay: (ctx) => {
+        if (ctx.type !== "data" || ctx.xStarted) return 0;
+        ctx.xStarted = true;
+        return delay + ctx.index * step;
+      },
+    },
+    y: {
+      type: "number",
+      easing: "easeOutQuart",
+      duration: step * 1.6,
+      from: previousY,
+      delay: (ctx) => {
+        if (ctx.type !== "data" || ctx.yStarted) return 0;
+        ctx.yStarted = true;
+        return delay + ctx.index * step;
+      },
+    },
+  };
+
   const options: ChartOptions<"line"> = {
     responsive: true,
     maintainAspectRatio: false,
+    /* Reduced motion means NO motion: the finished chart, drawn in one frame. */
+    animation: reducedMotion ? false : undefined,
+    /* Cast through `unknown`: Chart.js types `animations` callbacks against
+       ScriptableContext, but at runtime it passes the animation context typed as
+       DrawContext above. The shapes are irreconcilable in TS; the runtime is right. */
+    animations: reducedMotion
+      ? {}
+      : (draw as unknown as ChartOptions<"line">["animations"]),
+    /* Hovering re-tweens the point; keep that snappy and independent of the draw. */
+    transitions: { active: { animation: { duration: 150 } } },
     /* The sparkline is decorative; the interactive one is the accessible object. */
     events: interactive ? undefined : [],
     layout: { padding: interactive ? 2 : 1 },

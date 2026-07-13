@@ -84,7 +84,7 @@ export default function Profile() {
           </div>
           {/* The one place the trajectory is the subject rather than a garnish,
               so it is the interactive register: hover any point for its rating. */}
-          <Trend points={TREND} className="h-12 w-36" interactive />
+          <Trend points={TREND} className="h-12 w-36" interactive delay={280} />
         </div>
 
         <div className="mt-4 grid grid-cols-3 divide-x divide-line border-t border-line pt-3.5">
