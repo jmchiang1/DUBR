@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Trend } from "@/components/trend-chart";
 import { MatchCard } from "@/components/match-card";
-import { Avatar } from "@/components/shell";
 import { ArrowUpIcon, ArrowDownIcon, ChevronIcon, PinIcon, PlusIcon } from "@/components/icons";
 import {
   ME,
@@ -46,8 +45,6 @@ export default function Home() {
       {/* ── PROFILE ─────────────────────────────────────────────────────── */}
       <header className="card profile rise">
         <div className="profile__id">
-          <Avatar className="avatar avatar--lg" />
-
           <div style={{ minWidth: 0 }}>
             <h1 className="profile__name display">{ME.name}</h1>
             <div className="profile__meta">

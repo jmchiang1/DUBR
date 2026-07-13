@@ -570,8 +570,8 @@
 }
 
 .result-pill.is-win {
-  background: var(--aqua);
-  color: var(--on-aqua);
+  background: rgb(0, 229, 192, 0.2);
+  color: #00E5C0;
 }
 
 .result-pill.is-loss {

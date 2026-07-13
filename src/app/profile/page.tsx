@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Trend } from "@/components/trend-chart";
-import { Avatar } from "@/components/shell";
 import { ChevronIcon, PinIcon, TrophyIcon } from "@/components/icons";
 import { ME, TREND, DISCIPLINES, fmt, levelFor, fmtDelta } from "@/lib/dubr";
 
@@ -19,7 +18,6 @@ export default function Profile() {
     <div className="stack">
       <header className="card profile rise">
         <div className="profile__id">
-          <Avatar className="avatar avatar--lg" />
           <div style={{ minWidth: 0 }}>
             <h1 className="profile__name display">{ME.name}</h1>
             <div className="profile__meta">
