@@ -1,10 +1,9 @@
 import { CalendarIcon, PinIcon, ShuttleIcon } from "@/components/icons";
 
 /**
- * Open Play. The old app shipped this as a bare "Coming soon — find and join
- * open play sessions." on an otherwise empty black screen, which reads as an
- * unfinished build rather than a deliberate state. A pre-launch screen should
- * still show the shape of the thing and give the user something to do.
+ * Open Play. The old app shipped this as a bare "Coming soon" line on an empty
+ * screen, which reads as an unfinished build rather than a deliberate state. A
+ * pre-launch screen should still show the shape of the thing.
  */
 
 const SESSIONS = [
@@ -39,65 +38,48 @@ const SESSIONS = [
 
 export default function OpenPlay() {
   return (
-    <div className="space-y-3">
-      <header className="rise">
-        <div className="flex items-center gap-2">
-          <h1 className="display canvas-fg text-[26px]">Open Play</h1>
-          <span className="label rounded-[4px] border border-line bg-elevated px-1.5 py-1 !text-[8px] !text-mute">
-            Preview
-          </span>
-        </div>
-        <p className="canvas-mute mt-1.5 text-[13px]">
+    <div className="stack">
+      <header className="page-head rise">
+        <h1 className="page-title display">Open Play</h1>
+        <p className="page-sub">
           Rated sessions. Everything you play here counts toward your DUBR.
         </p>
       </header>
 
-      <ul className="space-y-3">
+      <ul className="grid-cards grid-cards--three">
         {SESSIONS.map((s, i) => {
           const full = s.spots === 0;
           return (
             <li
               key={s.venue}
-              className="rise overflow-hidden rounded-[14px] border border-line bg-surface"
-              style={{ animationDelay: `${40 + i * 40}ms` }}
+              className="card rise"
+              style={{ animationDelay: `${40 + i * 40}ms`, overflow: "hidden" }}
             >
-              <div className="flex items-start gap-3 px-4 pt-4 pb-3">
-                {/* Day block — a calendar chit, set in the display face. */}
-                <div className="grid h-11 w-11 shrink-0 place-items-center rounded-[8px] border border-line bg-elevated">
-                  <span className="display text-[13px] text-bone">{s.day}</span>
-                </div>
+              <div className="session__top">
+                <div className="session__day display">{s.day}</div>
 
-                <div className="min-w-0 flex-1">
-                  <div className="text-[14px] font-semibold text-bone">{s.venue}</div>
-                  <div className="mt-1 flex items-center gap-1 text-[11px] text-faint">
-                    <PinIcon className="h-3 w-3 shrink-0" />
-                    <span className="truncate">{s.location}</span>
+                <div className="session__body">
+                  <div className="session__venue">{s.venue}</div>
+                  <div className="player-card__meta">
+                    <PinIcon />
+                    <span>{s.location}</span>
                   </div>
                 </div>
 
-                <span
-                  className={`shrink-0 rounded-[8px] border px-2 py-1 text-[11px] font-medium ${
-                    full
-                      ? "border-line bg-elevated text-faint"
-                      : "border-aqua/30 bg-aqua/10 text-aqua-ink"
-                  }`}
-                >
+                <span className={`session__spots ${full ? "is-full" : ""}`}>
                   {full ? "Full" : `${s.spots} spots`}
                 </span>
               </div>
 
               {/* The three facts that decide whether you show up. */}
-              <div className="grid grid-cols-3 divide-x divide-line border-t border-line">
+              <div className="facts">
                 <Fact label="Time" value={s.time} />
                 <Fact label="DUBR Band" value={s.band} />
                 <Fact label="Courts" value={String(s.courts)} />
               </div>
 
-              <div className="border-t border-line p-3">
-                <button
-                  disabled={full}
-                  className="w-full rounded-[8px] bg-aqua py-2.5 text-[13px] font-semibold text-on-aqua transition-opacity hover:opacity-90 disabled:bg-elevated disabled:text-faint"
-                >
+              <div className="session__action">
+                <button disabled={full} className="btn btn--primary btn--block">
                   {full ? "Join waitlist" : "Reserve a spot"}
                 </button>
               </div>
@@ -106,22 +88,21 @@ export default function OpenPlay() {
         })}
       </ul>
 
-      <section
-        className="rise flex items-start gap-3 rounded-[14px] border border-line bg-surface px-4 py-4"
-        style={{ animationDelay: "200ms" }}
-      >
-        <ShuttleIcon className="mt-0.5 h-5 w-5 shrink-0 text-faint" />
-        <div>
-          <div className="text-[13px] text-bone">Booking opens with the Flushing launch</div>
-          <p className="mt-1 text-[12px] leading-relaxed text-faint">
-            Sessions are banded by DUBR so you get games worth playing. Reserve now and you
-            keep your spot when courts go live.
-          </p>
+      <section className="card card--pad rise" style={{ animationDelay: "200ms" }}>
+        <div className="row" style={{ alignItems: "flex-start" }}>
+          <ShuttleIcon />
+          <div>
+            <div>Booking opens with the Flushing launch</div>
+            <p className="provisional__note">
+              Sessions are banded by DUBR so you get games worth playing. Reserve now and you keep
+              your spot when courts go live.
+            </p>
+          </div>
         </div>
       </section>
 
-      <div className="rise canvas-faint flex items-center gap-2 px-1 text-[11px]" style={{ animationDelay: "240ms" }}>
-        <CalendarIcon className="h-3.5 w-3.5" />
+      <div className="row footnote">
+        <CalendarIcon className="search__icon" />
         Times shown in your local timezone.
       </div>
     </div>
@@ -130,9 +111,9 @@ export default function OpenPlay() {
 
 function Fact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="px-3 py-3">
+    <div className="fact">
       <div className="label">{label}</div>
-      <div className="mt-1.5 text-[12px] tabular-nums text-bone">{value}</div>
+      <div className="fact__value">{value}</div>
     </div>
   );
 }

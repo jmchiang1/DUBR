@@ -13,7 +13,7 @@ const S = ({ children, className }: P & { children: React.ReactNode }) => (
     strokeWidth={1.6}
     strokeLinecap="round"
     strokeLinejoin="round"
-    className={className ?? "h-5 w-5"}
+    className={className ?? "icon"}
     aria-hidden="true"
   >
     {children}

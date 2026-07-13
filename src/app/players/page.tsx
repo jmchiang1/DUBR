@@ -1,13 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PLAYERS, DISCIPLINES, fmt, levelFor } from "@/lib/dubr";
+import { PLAYERS, DISCIPLINES, fmt } from "@/lib/dubr";
 import { SearchIcon, PinIcon } from "@/components/icons";
 
 export default function Players() {
   const [q, setQ] = useState("");
-  /** Off by default. "Near my level" is the query that actually gets someone a
-      game — the old app made you scroll a directory and guess. */
+  /** "Near my level" is the query that actually gets someone a game — the old
+      app made you scroll a directory and guess. */
   const [nearMe, setNearMe] = useState(false);
 
   const results = useMemo(() => {
@@ -22,102 +22,75 @@ export default function Players() {
   }, [q, nearMe]);
 
   return (
-    <div className="space-y-3">
-      <header className="rise">
-        <h1 className="display canvas-fg text-[26px] lg:text-[32px]">Players</h1>
-        <p className="canvas-mute mt-1.5 text-[13px] lg:text-[14px]">
-          A close match makes a better game — and moves your rating more.
-        </p>
+    <div className="stack">
+      <header className="page-head rise">
+        <h1 className="page-title display">Players</h1>
+        <p className="page-sub">A close match makes a better game — and moves your rating more.</p>
       </header>
 
-      <div className="rise flex gap-2 lg:max-w-lg" style={{ animationDelay: "40ms" }}>
-        <div className="flex flex-1 items-center gap-2.5 rounded-[8px] border border-line bg-surface px-3">
-          <SearchIcon className="h-4 w-4 shrink-0 text-faint" />
+      <div className="row rise" style={{ maxWidth: 520 }}>
+        <div className="searchbar">
+          <SearchIcon className="search__icon" />
           <input
+            className="search__input"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search players"
             aria-label="Search players"
-            className="w-full bg-transparent py-2.5 text-[13px] text-bone outline-none placeholder:text-faint"
           />
         </div>
         <button
           onClick={() => setNearMe((v) => !v)}
           aria-pressed={nearMe}
-          className={`shrink-0 rounded-[8px] border px-3 text-[12px] font-medium transition-colors ${
-            nearMe
-              ? "border-aqua bg-aqua text-on-aqua"
-              : "border-line bg-surface text-mute hover:text-bone"
-          }`}
+          className={`filter-btn ${nearMe ? "is-active" : ""}`}
         >
           Near my level
         </button>
       </div>
 
-      {/* On desktop the directory becomes a two-up grid of cards. A single
-          full-width row at 1280px leaves a player's name stranded a foot away
-          from their rating. */}
-      <section className="rise" style={{ animationDelay: "80ms" }}>
-        {results.length === 0 ? (
-          <p className="rounded-[14px] border border-line bg-surface px-4 py-10 text-center text-[13px] text-faint">
-            No players match “{q}”.
-          </p>
-        ) : (
-          <ul className="grid gap-3 lg:grid-cols-2">
-            {results.map((p) => (
-              <li
-                key={p.id}
-                className="flex min-w-0 items-center gap-3 rounded-[14px] border border-line bg-surface px-3 py-3.5 transition-colors hover:bg-elevated/60 lg:px-4"
+      {results.length === 0 ? (
+        <p className="card empty">No players match “{q}”.</p>
+      ) : (
+        <ul className="grid-cards rise" style={{ animationDelay: "80ms" }}>
+          {results.map((p) => (
+            <li key={p.id} className="card player-card">
+              <span
+                className={`avatar-initials avatar-initials--lg ${
+                  p.singles === null ? "is-provisional" : ""
+                }`}
               >
-                <div
-                  className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border text-[12px] font-semibold ${
-                    p.singles === null
-                      ? "border-dashed border-line bg-ink text-faint"
-                      : "border-line bg-elevated text-mute"
-                  }`}
-                >
-                  {p.initials}
-                </div>
+                {p.initials}
+              </span>
 
-                <div className="min-w-0 flex-1">
-                  <div className="truncate text-[13px] text-bone">{p.name}</div>
-                  <div className="mt-1 flex items-center gap-1 text-[11px] text-faint">
-                    <PinIcon className="h-3 w-3 shrink-0" />
-                    <span className="truncate">{p.club ?? p.location}</span>
-                  </div>
+              <div className="player-card__body">
+                <div className="player-card__name">{p.name}</div>
+                <div className="player-card__meta">
+                  <PinIcon />
+                  <span>{p.club ?? p.location}</span>
                 </div>
+              </div>
 
-                {/* All three discipline ratings, always — a doubles specialist
-                    and a singles specialist are different players, and hiding
-                    two of the three numbers hides that. */}
-                <div className="flex shrink-0 gap-px overflow-hidden rounded-[8px] border border-line">
-                  {DISCIPLINES.map((d) => {
-                    const v = p[d.id];
-                    return (
-                      <div
-                        key={d.id}
-                        className="bg-elevated px-2 py-1.5 text-center"
-                        title={`${d.label}: ${fmt(v)}`}
-                      >
-                        <div className="label !text-[8px]">{d.label.slice(0, 1)}</div>
-                        <div
-                          className={`mt-1 text-[12px] tabular-nums ${
-                            v === null ? "text-faint" : "text-bone"
-                          }`}
-                        >
-                          {v === null ? "NR" : v.toFixed(2)}
-                        </div>
+              {/* All three discipline ratings, always — a doubles specialist and
+                  a singles specialist are different players. */}
+              <div className="chips">
+                {DISCIPLINES.map((d) => {
+                  const v = p[d.id];
+                  return (
+                    <div key={d.id} className="chip" title={`${d.label}: ${fmt(v)}`}>
+                      <div className="label">{d.label.slice(0, 1)}</div>
+                      <div className={`chip__value ${v === null ? "is-unrated" : ""}`}>
+                        {v === null ? "NR" : v.toFixed(2)}
                       </div>
-                    );
-                  })}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+                    </div>
+                  );
+                })}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
 
-      <p className="rise canvas-faint px-1 text-[11px]" style={{ animationDelay: "120ms" }}>
+      <p className="footnote">
         Showing {results.length} of {PLAYERS.length - 1} players.{" "}
         {results.some((p) => p.singles === null) &&
           "Unrated players show NR until they have logged 5 matches."}

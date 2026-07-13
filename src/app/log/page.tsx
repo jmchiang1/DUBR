@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { PLAYERS, DISCIPLINES, type Discipline, ME, fmtDelta } from "@/lib/dubr";
 import { PlusIcon, ShuttleIcon } from "@/components/icons";
+import { Avatar } from "@/components/shell";
 
 type Slot = string | null;
 
@@ -46,8 +47,8 @@ export default function LogMatch() {
   const decided = tally.us >= 2 || tally.them >= 2;
   const won = tally.us > tally.them;
 
-  /** Opponent strength drives the swing — that's the whole point of a rating
-      system, so we show it live rather than making it a black box. */
+  /** Opponent strength drives the swing — that is the whole point of a rating
+      system, so it is shown live rather than hidden in a black box. */
   const oppRating = useMemo(() => {
     const rs = [opp1, opp2]
       .filter(Boolean)
@@ -70,198 +71,160 @@ export default function LogMatch() {
   const complete = decided && opp1 !== null && (!isDoubles || (partner !== null && opp2 !== null));
 
   return (
-    <div className="space-y-4 lg:space-y-6">
-      <header className="rise">
-        <h1 className="display canvas-fg text-[26px] lg:text-[32px]">Log a Match</h1>
-        <p className="canvas-mute mt-1.5 text-[13px] lg:text-[14px]">
-          Your opponent confirms it, then both ratings move.
-        </p>
+    <div className="stack">
+      <header className="page-head rise">
+        <h1 className="page-title display">Log a Match</h1>
+        <p className="page-sub">Your opponent confirms it, then both ratings move.</p>
       </header>
 
-      {/* Two columns on desktop: who played on the left, what happened on the
-          right. On mobile it stacks into the same reading order. */}
-      <div className="grid gap-4 lg:grid-cols-2 lg:items-start lg:gap-6">
-        <div className="space-y-4">
-      {/* Discipline */}
-      <section
-        className="rise overflow-hidden rounded-[14px] border border-line bg-surface"
-        style={{ animationDelay: "40ms" }}
-      >
-        <div className="flex divide-x divide-line">
-          {DISCIPLINES.map((d) => {
-            const active = d.id === disc;
-            return (
-              <button
-                key={d.id}
-                onClick={() => {
-                  setDisc(d.id);
-                  if (d.id === "singles") {
-                    setPartner(null);
-                    setOpp2(null);
-                  }
-                }}
-                aria-pressed={active}
-                className={`flex-1 py-3 text-[13px] transition-colors ${
-                  active ? "bg-elevated text-bone" : "text-faint hover:text-mute"
-                }`}
-              >
-                {d.label}
-              </button>
-            );
-          })}
-        </div>
-      </section>
+      {/* Who played on the left, what happened on the right. */}
+      <div className="split">
+        <div className="stack--tight stack">
+          <section className="card rise" style={{ animationDelay: "40ms", overflow: "hidden" }}>
+            <div className="disciplines">
+              {DISCIPLINES.map((d) => (
+                <button
+                  key={d.id}
+                  onClick={() => {
+                    setDisc(d.id);
+                    if (d.id === "singles") {
+                      setPartner(null);
+                      setOpp2(null);
+                    }
+                  }}
+                  aria-pressed={d.id === disc}
+                  className={`discipline ${d.id === disc ? "is-active" : ""}`}
+                  style={{ textAlign: "center", padding: 12 }}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
+          </section>
 
-      {/* Teams */}
-      <section
-        className="rise space-y-px overflow-hidden rounded-[14px] border border-line bg-surface"
-        style={{ animationDelay: "80ms" }}
-      >
-        <div className="px-4 pt-3.5 pb-2">
-          <div className="label">Your side</div>
-        </div>
-        <div className="flex items-center gap-3 px-4 pb-3">
-          <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-aqua/40 bg-aqua/10 text-[11px] font-semibold text-aqua-ink">
-            {ME.initials}
-          </div>
-          <span className="flex-1 text-[13px] text-bone">{ME.name}</span>
-          <span className="text-[12px] tabular-nums text-mute">
-            {(ME[disc] ?? ME.singles)?.toFixed(3) ?? "NR"}
-          </span>
-        </div>
+          <section className="card rise" style={{ animationDelay: "80ms" }}>
+            <div className="form-section">
+              <div className="label form-section__label">Your side</div>
+              <div className="player" style={{ padding: "4px 0" }}>
+                <Avatar className="avatar avatar--sm" />
+                <span className="player__name is-me" style={{ flex: 1 }}>
+                  {ME.name}
+                </span>
+                <span className="field__rating">
+                  {(ME[disc] ?? ME.singles)?.toFixed(3) ?? "NR"}
+                </span>
+              </div>
 
-        {isDoubles && (
-          <div className="border-t border-line px-4 py-3">
-            <PlayerSelect
-              value={partner}
-              onChange={setPartner}
-              options={opponents.filter((p) => p.id !== opp1 && p.id !== opp2)}
-              placeholder="Add partner"
-            />
-          </div>
-        )}
-
-        <div className="border-t border-line px-4 pt-3.5 pb-2">
-          <div className="label">Opponents</div>
-        </div>
-        <div className="space-y-2 px-4 pb-4">
-          <PlayerSelect
-            value={opp1}
-            onChange={setOpp1}
-            options={opponents.filter((p) => p.id !== partner && p.id !== opp2)}
-            placeholder="Add opponent"
-          />
-          {isDoubles && (
-            <PlayerSelect
-              value={opp2}
-              onChange={setOpp2}
-              options={opponents.filter((p) => p.id !== partner && p.id !== opp1)}
-              placeholder="Add opponent"
-            />
-          )}
-        </div>
-      </section>
-        </div>
-
-        <div className="space-y-4">
-      {/* Score — badminton is best-of-three to 21, so the grid is three games,
-          not the five-game pickleball grid DUPR uses. */}
-      <section
-        className="rise overflow-hidden rounded-[14px] border border-line bg-surface"
-        style={{ animationDelay: "120ms" }}
-      >
-        <div className="flex items-center justify-between px-4 py-3.5">
-          <div className="label">Score</div>
-          <div className="text-[11px] text-faint">Best of 3 · to 21</div>
-        </div>
-
-        <div className="grid grid-cols-3 gap-px border-t border-line bg-line">
-          {games.map((g, i) => {
-            const settled = g[0] !== "" && g[1] !== "" && Number(g[0]) !== Number(g[1]);
-            const winner = settled && Number(g[0]) > Number(g[1]);
-            return (
-              <div key={i} className="bg-surface px-3 py-3.5">
-                <div className="label mb-2.5 text-center">Game {i + 1}</div>
-                <div className="space-y-1.5">
-                  <ScoreInput
-                    value={g[0]}
-                    onChange={(v) => setGame(i, 0, v)}
-                    highlight={settled && winner}
-                    aria-label={`Game ${i + 1}, your score`}
-                  />
-                  <ScoreInput
-                    value={g[1]}
-                    onChange={(v) => setGame(i, 1, v)}
-                    highlight={settled && !winner}
-                    aria-label={`Game ${i + 1}, opponent score`}
+              {isDoubles && (
+                <div style={{ marginTop: 12 }}>
+                  <PlayerSelect
+                    value={partner}
+                    onChange={setPartner}
+                    options={opponents.filter((p) => p.id !== opp1 && p.id !== opp2)}
+                    placeholder="Add partner"
                   />
                 </div>
+              )}
+            </div>
+
+            <div className="form-section">
+              <div className="label form-section__label">Opponents</div>
+              <div className="stack--tight" style={{ display: "flex", flexDirection: "column" }}>
+                <PlayerSelect
+                  value={opp1}
+                  onChange={setOpp1}
+                  options={opponents.filter((p) => p.id !== partner && p.id !== opp2)}
+                  placeholder="Add opponent"
+                />
+                {isDoubles && (
+                  <PlayerSelect
+                    value={opp2}
+                    onChange={setOpp2}
+                    options={opponents.filter((p) => p.id !== partner && p.id !== opp1)}
+                    placeholder="Add opponent"
+                  />
+                )}
               </div>
-            );
-          })}
+            </div>
+          </section>
         </div>
 
-        {/* Third game is only played if the match is split — say so rather than
-            leaving an input that looks required. */}
-        {tally.us + tally.them < 2 && (
-          <p className="border-t border-line px-4 py-2.5 text-[11px] text-faint">
-            Leave game 3 empty if the match ended in two.
-          </p>
-        )}
-      </section>
-
-      {/* ── Live rating impact. The single best reason to open this screen: you
-             can see what the match is worth before you commit it. ───────────── */}
-      <section
-        className={`rise overflow-hidden rounded-[14px] border transition-colors ${
-          projected !== null
-            ? "border-cobalt-hi/40 bg-gradient-to-b from-cobalt to-cobalt-lo"
-            : "border-line bg-surface"
-        }`}
-        style={{ animationDelay: "160ms" }}
-      >
-        {projected !== null ? (
-          <div className="flex items-center justify-between px-4 py-4">
-            <div>
-              <div className="label !text-white/55">Projected DUBR</div>
-              <div className="mt-2 flex items-baseline gap-2">
-                <span className="figure text-[30px] text-white">
-                  {((ME[disc] ?? 5) + projected).toFixed(3)}
-                </span>
-                <span
-                  className={`text-[13px] font-semibold tabular-nums ${
-                    projected >= 0 ? "text-aqua-ink" : "text-loss"
-                  }`}
-                >
-                  {fmtDelta(projected)}
-                </span>
-              </div>
+        <div className="stack--tight stack">
+          <section className="card rise" style={{ animationDelay: "120ms", overflow: "hidden" }}>
+            <div className="card__head">
+              <div className="label">Score</div>
+              <div className="footnote">Best of 3 · to 21</div>
             </div>
-            <div className="text-right">
-              <div className="label !text-white/55">Result</div>
-              <div className="display mt-2 text-[17px] text-white">
-                {won ? "Win" : "Loss"} {tally.us}–{tally.them}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-center gap-3 px-4 py-4">
-            <ShuttleIcon className="h-5 w-5 shrink-0 text-faint" />
-            <p className="text-[12px] leading-relaxed text-faint">
-              Add your opponents and a score, and DUBR will show you exactly what this match
-              moves before you submit it.
-            </p>
-          </div>
-        )}
-      </section>
 
-      <button
-        disabled={!complete}
-        className="rise w-full rounded-[8px] bg-aqua py-3.5 text-[14px] font-semibold text-on-aqua transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:bg-elevated disabled:text-faint"
-        style={{ animationDelay: "200ms" }}
-      >
-        {complete ? "Submit for confirmation" : "Add players and a score"}
-      </button>
+            <div className="score-grid">
+              {games.map((g, i) => {
+                const settled = g[0] !== "" && g[1] !== "" && Number(g[0]) !== Number(g[1]);
+                const winner = settled && Number(g[0]) > Number(g[1]);
+                return (
+                  <div key={i} className="score-cell">
+                    <div className="label score-cell__label">Game {i + 1}</div>
+                    <ScoreInput
+                      value={g[0]}
+                      onChange={(v) => setGame(i, 0, v)}
+                      winner={settled && winner}
+                      aria-label={`Game ${i + 1}, your score`}
+                    />
+                    <ScoreInput
+                      value={g[1]}
+                      onChange={(v) => setGame(i, 1, v)}
+                      winner={settled && !winner}
+                      aria-label={`Game ${i + 1}, opponent score`}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* The third game is only played if the match is split — say so
+                rather than leaving an input that looks required. */}
+            {tally.us + tally.them < 2 && (
+              <p className="hint">Leave game 3 empty if the match ended in two.</p>
+            )}
+          </section>
+
+          {/* The best reason to open this screen: see what the match is worth
+              before you commit it. */}
+          <section className="card rise" style={{ animationDelay: "160ms" }}>
+            {projected !== null ? (
+              <div className="projection">
+                <div>
+                  <div className="label">Projected DUBR</div>
+                  <div className="projection__figure figure text-aqua">
+                    {((ME[disc] ?? 5) + projected).toFixed(3)}
+                  </div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div className="label">Result</div>
+                  <div className="display" style={{ marginTop: 8, fontSize: 17 }}>
+                    {won ? "Win" : "Loss"} {tally.us}–{tally.them}
+                  </div>
+                  <div
+                    className={`delta delta--bare ${projected >= 0 ? "is-up" : "is-down"}`}
+                    style={{ marginTop: 4 }}
+                  >
+                    {fmtDelta(projected)}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="projection__empty">
+                <ShuttleIcon />
+                <p>
+                  Add your opponents and a score, and DUBR will show you exactly what this match
+                  moves before you submit it.
+                </p>
+              </div>
+            )}
+          </section>
+
+          <button disabled={!complete} className="btn btn--primary btn--block rise">
+            {complete ? "Submit for confirmation" : "Add players and a score"}
+          </button>
         </div>
       </div>
     </div>
@@ -271,12 +234,12 @@ export default function LogMatch() {
 function ScoreInput({
   value,
   onChange,
-  highlight,
+  winner,
   ...rest
 }: {
   value: string;
   onChange: (v: string) => void;
-  highlight: boolean;
+  winner: boolean;
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange">) {
   return (
     <input
@@ -285,11 +248,7 @@ function ScoreInput({
       onChange={(e) => onChange(e.target.value)}
       inputMode="numeric"
       placeholder="–"
-      className={`figure w-full rounded-[8px] border py-2.5 text-center text-[20px] outline-none transition-colors focus:border-aqua ${
-        highlight
-          ? "border-aqua/40 bg-aqua/10 text-aqua-ink"
-          : "border-line bg-ink text-bone placeholder:text-faint"
-      }`}
+      className={`score-input figure ${winner ? "is-winner" : ""}`}
     />
   );
 }
@@ -308,22 +267,20 @@ function PlayerSelect({
   const selected = PLAYERS.find((p) => p.id === value);
 
   return (
-    <div className="flex items-center gap-3 rounded-[8px] border border-line bg-ink px-3 py-2">
-      <div
-        className={`grid h-8 w-8 shrink-0 place-items-center rounded-full border text-[11px] font-semibold ${
-          selected
-            ? "border-line bg-elevated text-mute"
-            : "border-dashed border-line text-faint"
-        }`}
-      >
-        {selected ? selected.initials : <PlusIcon className="h-4 w-4" />}
-      </div>
+    <div className="field">
+      {selected ? (
+        <span className="avatar-initials">{selected.initials}</span>
+      ) : (
+        <span className="avatar-initials is-provisional">
+          <PlusIcon />
+        </span>
+      )}
 
       <select
+        className="field__select"
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value || null)}
         aria-label={placeholder}
-        className="flex-1 cursor-pointer appearance-none bg-transparent py-1 text-[13px] text-bone outline-none"
       >
         <option value="">{placeholder}</option>
         {options.map((p) => (
@@ -334,9 +291,7 @@ function PlayerSelect({
       </select>
 
       {selected && (
-        <span className="shrink-0 text-[12px] tabular-nums text-mute">
-          {selected.singles?.toFixed(3) ?? "NR"}
-        </span>
+        <span className="field__rating">{selected.singles?.toFixed(3) ?? "NR"}</span>
       )}
     </div>
   );

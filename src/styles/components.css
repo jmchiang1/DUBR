@@ -1,0 +1,1234 @@
+/* ============================================================================
+   COMPONENTS — every reusable object in the app.
+
+   Convention: block__element, and state as a separate `.is-*` class
+   (.is-active, .is-win, .is-up). So you can always find a thing by its name.
+   ========================================================================== */
+
+/* ── Card. The one surface primitive everything else sits on. ─────────────── */
+
+.card {
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.card--pad {
+  padding: var(--gap-md) var(--pad-page);
+}
+
+@media (min-width: 1024px) {
+  .card--pad {
+    padding: var(--gap-lg);
+  }
+}
+
+.card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+  padding: var(--gap-md) var(--pad-page);
+}
+
+.card__title {
+  font-size: 15px;
+}
+
+.card__link {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  color: var(--mute);
+  transition: color 0.15s;
+}
+
+.card__link:hover {
+  color: var(--bone);
+}
+
+.card__link svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ── Page heading (sits on the canvas, not on a card) ─────────────────────── */
+
+.page-head {
+  margin-bottom: var(--gap-md);
+}
+
+.page-title {
+  font-size: 26px;
+}
+
+.page-sub {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--mute);
+}
+
+@media (min-width: 1024px) {
+  .page-title {
+    font-size: 32px;
+  }
+  .page-sub {
+    font-size: 14px;
+  }
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-sm);
+  padding: 10px var(--gap-md);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+}
+
+.btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn--primary {
+  background: var(--aqua);
+  color: var(--on-aqua);
+}
+
+.btn--primary:hover {
+  opacity: 0.9;
+}
+
+.btn--primary:disabled {
+  background: var(--elevated);
+  color: var(--faint);
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.btn--ghost {
+  background: var(--surface);
+  color: var(--mute);
+}
+
+.btn--ghost:hover {
+  color: var(--bone);
+}
+
+.btn--block {
+  width: 100%;
+}
+
+/* The rail's primary action. */
+.sidebar .btn--primary {
+  margin-top: var(--gap-lg);
+}
+
+/* ── Avatar ───────────────────────────────────────────────────────────────── */
+
+.avatar {
+  display: block;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-pill);
+  /* The source photo is 16:9 with the face above centre, so a plain centre crop
+     cuts the chin off. */
+  object-fit: cover;
+  object-position: 50% 22%;
+  box-shadow: 0 0 0 2px var(--aqua);
+}
+
+.avatar--lg {
+  width: 56px;
+  height: 56px;
+}
+
+.avatar--sm {
+  width: 24px;
+  height: 24px;
+}
+
+@media (min-width: 1024px) {
+  .avatar--lg {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+/* Fallback for players with no photo. Reusing one photo for everybody made
+   every player on court the same person. */
+.avatar-initials {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  background: var(--elevated);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--mute);
+}
+
+.avatar-initials--lg {
+  width: 32px;
+  height: 32px;
+  font-size: 11px;
+}
+
+/* An empty slot in a form shows a plus rather than initials. */
+.avatar-initials svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ── Stat. Used everywhere a labelled number appears. ─────────────────────── */
+
+.stat__label {
+  /* inherits .label */
+}
+
+.stat__value {
+  margin-top: var(--gap-sm);
+  font-size: 24px;
+  color: var(--bone);
+}
+
+.stat__sub {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--gap-lg);
+}
+
+.stat-grid--divided {
+  margin-top: var(--gap-lg);
+  padding-top: var(--gap-lg);
+  border-top: 1px solid var(--line);
+}
+
+/* ── Profile header ───────────────────────────────────────────────────────── */
+
+.profile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+  padding: var(--gap-md);
+}
+
+.profile__id {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+  flex: 1;
+  min-width: 0;
+}
+
+.profile__name {
+  font-size: 20px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.profile__meta svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.profile__social {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-lg);
+  flex-shrink: 0;
+  padding-top: var(--gap-md);
+  border-top: 1px solid var(--line);
+}
+
+.social {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.social__value {
+  font-size: 22px;
+}
+
+@media (min-width: 640px) {
+  .profile {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--gap-lg);
+  }
+  .profile__social {
+    padding-top: 0;
+    border-top: 0;
+  }
+}
+
+@media (min-width: 1024px) {
+  .profile {
+    padding: var(--gap-lg);
+  }
+  .profile__name {
+    font-size: 26px;
+  }
+  .profile__meta {
+    font-size: 13px;
+  }
+  .social__value {
+    font-size: 26px;
+  }
+}
+
+/* ── Rating card ──────────────────────────────────────────────────────────── */
+
+.rating-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Badminton has three disciplines and a player's rating in each is genuinely
+   different, so this is a first-class control, not a tab buried on a profile. */
+.disciplines {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+}
+
+.discipline {
+  flex: 1;
+  padding: var(--gap) var(--gap-md);
+  text-align: left;
+  border-right: 1px solid var(--line);
+  transition: background 0.15s;
+}
+
+.discipline:last-child {
+  border-right: 0;
+}
+
+.discipline:hover {
+  background: var(--surface-hover);
+}
+
+.discipline.is-active {
+  background: var(--elevated);
+}
+
+.discipline.is-active .label {
+  color: var(--bone);
+}
+
+.discipline__value {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--faint);
+}
+
+.discipline.is-active .discipline__value {
+  color: var(--bone);
+}
+
+.rating {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: var(--gap-lg) var(--pad-page);
+}
+
+.rating__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-md);
+  margin-top: var(--gap-sm);
+}
+
+/* The one number that IS the product. On this canvas the accent is legible as
+   text, so it gets the accent. */
+.rating__figure {
+  font-size: 64px;
+  color: var(--aqua);
+}
+
+.rating__level {
+  margin-top: var(--gap-sm);
+  font-size: 13px;
+  color: var(--mute);
+}
+
+.rating__level strong {
+  color: var(--bone);
+}
+
+.rating__empty {
+  flex: 1;
+  margin-top: var(--gap);
+  max-width: 42ch;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--mute);
+}
+
+.rating__empty .btn {
+  margin-top: var(--gap-md);
+}
+
+@media (min-width: 1024px) {
+  .rating {
+    padding: var(--gap-lg);
+  }
+  .rating__figure {
+    font-size: 96px;
+  }
+}
+
+/* ── Delta pill. Up is aqua, down is loss. Used on the rating and on matches. */
+
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px var(--gap-sm);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.delta svg {
+  width: 12px;
+  height: 12px;
+}
+
+.delta.is-up {
+  background: var(--aqua);
+  color: var(--on-aqua);
+}
+
+.delta.is-down {
+  background: var(--loss);
+  color: var(--bone);
+}
+
+/* Bare (no fill) — for use inside a match card, where a filled pill would
+   compete with the result pill next to it.
+
+   `background` MUST be reset on the `.delta--bare.is-*` compound, not on
+   `.delta--bare` alone: `.delta.is-up` sets the fill at specificity (0,2,0), so
+   a bare rule at (0,1,0) loses to it and you get aqua text on an aqua fill —
+   an invisible number. */
+.delta--bare {
+  padding: 0;
+  font-size: 13px;
+}
+
+.delta--bare.is-up {
+  background: none;
+  color: var(--aqua);
+}
+
+.delta--bare.is-down {
+  background: none;
+  color: var(--loss);
+}
+
+/* ── Chart ────────────────────────────────────────────────────────────────── */
+
+.chart {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  margin-top: var(--gap-lg);
+}
+
+.chart__canvas {
+  flex: 1;
+  width: 100%;
+  height: 128px;
+  margin-top: var(--gap);
+}
+
+@media (min-width: 1024px) {
+  .chart__canvas {
+    min-height: 150px;
+  }
+}
+
+/* ── Match card ───────────────────────────────────────────────────────────
+   A match reprices EVERY player on court, so all of them are listed with the
+   rating they carried in and the direction it moved. A row showing only your
+   own delta hides the one thing the rating system does. */
+
+.match {
+  padding: var(--gap-md);
+}
+
+@media (min-width: 1024px) {
+  .match {
+    padding: var(--gap-md) var(--pad-page);
+  }
+}
+
+.match__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gap);
+}
+
+.result-pill {
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.result-pill.is-win {
+  background: var(--aqua);
+  color: var(--on-aqua);
+}
+
+.result-pill.is-loss {
+  background: rgba(255, 61, 90, 0.2);
+  color: var(--loss);
+}
+
+.match__event {
+  margin-top: var(--gap);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.match__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.match__meta svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.match__sides {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  margin-top: var(--gap-md);
+}
+
+.match__side {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+}
+
+.match__players {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── A player line inside a match ─────────────────────────────────────────── */
+
+.player {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  min-width: 0;
+}
+
+.player__name {
+  font-size: 13px;
+  color: var(--mute);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player__name.is-me {
+  color: var(--bone);
+  font-weight: 600;
+}
+
+/* The rating they carried in, and which way this match moved it. */
+.player__rating {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  font-size: 13px;
+}
+
+.player__rating svg {
+  width: 12px;
+  height: 12px;
+}
+
+.player__rating.is-up {
+  color: var(--aqua);
+}
+
+.player__rating.is-down {
+  color: var(--loss);
+}
+
+/* ── Scores. The winner is marked by a caret, not a coloured row: colour is
+      already carrying rating movement, and a second colour code competing with
+      it would leave neither legible. ─────────────────────────────────────── */
+
+.match__scores {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.scores {
+  display: flex;
+  gap: var(--gap-sm);
+}
+
+.score {
+  width: 22px;
+  text-align: right;
+  font-size: 15px;
+  color: var(--faint);
+}
+
+.score.is-winner {
+  color: var(--bone);
+  font-weight: 600;
+}
+
+.caret {
+  width: 8px;
+  flex-shrink: 0;
+}
+
+.caret svg {
+  width: 8px;
+  height: 10px;
+  fill: var(--aqua);
+}
+
+/* ── Tabs (rankings). A segmented rule, not a pill row. ───────────────────── */
+
+.tabs {
+  display: flex;
+  gap: var(--gap-lg);
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.tab {
+  position: relative;
+  margin-bottom: -1px;
+  padding-bottom: 10px;
+  font-size: 13px;
+  color: var(--faint);
+  transition: color 0.15s;
+}
+
+.tab:hover {
+  color: var(--mute);
+}
+
+.tab.is-active {
+  color: var(--bone);
+}
+
+.tab.is-active::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 2px;
+  background: var(--aqua);
+}
+
+/* ── Leaderboard ──────────────────────────────────────────────────────────── */
+
+.board__head,
+.board__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: var(--gap) var(--gap);
+}
+
+@media (min-width: 1024px) {
+  .board__head,
+  .board__row {
+    padding: var(--gap) var(--gap-md);
+  }
+}
+
+.board__head {
+  border-bottom: 1px solid var(--line);
+}
+
+.board__row {
+  border-bottom: 1px solid var(--line);
+  transition: background 0.15s;
+}
+
+.board__row:last-child {
+  border-bottom: 0;
+}
+
+.board__row:hover {
+  background: var(--surface-hover);
+}
+
+.board__row.is-me {
+  background: rgba(0, 229, 192, 0.1);
+}
+
+.board__rank {
+  width: 20px;
+  flex-shrink: 0;
+  font-size: 15px;
+  color: var(--faint);
+}
+
+.board__rank.is-top {
+  color: var(--bone);
+}
+
+.board__player {
+  flex: 1;
+  min-width: 0;
+}
+
+.board__name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.board__name span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.board__sub {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--faint);
+}
+
+/* Columns the desktop width can afford. Hidden on mobile rather than crushed
+   into ellipses. */
+.board__club,
+.board__record {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .board__club {
+    display: block;
+    width: 160px;
+    flex-shrink: 0;
+    font-size: 12px;
+    color: var(--mute);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .board__record {
+    display: block;
+    width: 64px;
+    flex-shrink: 0;
+    text-align: right;
+    font-size: 12px;
+    color: var(--mute);
+  }
+}
+
+.board__rating {
+  width: 52px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 16px;
+}
+
+@media (min-width: 1024px) {
+  .board__rating {
+    width: 64px;
+    font-size: 18px;
+  }
+}
+
+.board__rating.is-unrated {
+  color: var(--faint);
+}
+
+.badge-you {
+  flex-shrink: 0;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: var(--aqua);
+  color: var(--on-aqua);
+  font-size: 8px;
+}
+
+/* Reliability as a 4-segment gauge — makes a thinly-tested rating visibly
+   thinner at a glance. */
+.rel {
+  display: flex;
+  justify-content: flex-end;
+  gap: 2px;
+  width: 36px;
+  flex-shrink: 0;
+}
+
+.rel__seg {
+  width: 3px;
+  height: 12px;
+  border-radius: var(--radius-pill);
+  background: var(--line-strong);
+}
+
+.rel__seg.is-on {
+  background: var(--aqua);
+}
+
+/* Provisional players: separated, honestly labelled, never given a default
+   rating. The old board listed zero-match players at 5.500 / "Advanced", which
+   made every real rating above them look invented too. */
+.provisional__head {
+  padding: var(--gap) var(--gap-md);
+  border-bottom: 1px solid var(--line);
+}
+
+.provisional__note {
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--faint);
+}
+
+.avatar-initials.is-provisional {
+  background: none;
+  border: 1px dashed var(--line-strong);
+  color: var(--faint);
+}
+
+/* ── Player directory ─────────────────────────────────────────────────────── */
+
+.player-card {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  min-width: 0;
+  padding: var(--gap) var(--gap-md);
+  transition: background 0.15s;
+}
+
+.player-card:hover {
+  background: var(--surface-hover);
+}
+
+.player-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.player-card__name {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.player-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.player-card__meta svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+/* All three discipline ratings, always. A doubles specialist and a singles
+   specialist are different players; hiding two of the three hides that. */
+.chips {
+  display: flex;
+  gap: 1px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+}
+
+.chip {
+  padding: 6px var(--gap-sm);
+  background: var(--elevated);
+  text-align: center;
+}
+
+.chip__value {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.chip__value.is-unrated {
+  color: var(--faint);
+}
+
+/* ── Forms (log a match) ──────────────────────────────────────────────────── */
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding: var(--gap-sm) var(--gap);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 12, 67, 0.35);
+}
+
+.field__select {
+  flex: 1;
+  padding: 4px 0;
+  font-size: 13px;
+  cursor: pointer;
+  appearance: none;
+  outline: none;
+}
+
+/* The dropdown itself renders in the OS layer, so its options need an explicit
+   dark background — they do not inherit the glass. */
+.field__select option {
+  background: var(--ink);
+  color: var(--bone);
+}
+
+.field__rating {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.form-section {
+  padding: var(--gap-md);
+}
+
+.form-section__label {
+  margin-bottom: var(--gap-sm);
+}
+
+.form-section + .form-section {
+  border-top: 1px solid var(--line);
+}
+
+/* Badminton is best-of-three to 21, so the grid is three games — not the
+   five-game pickleball grid DUPR uses. */
+.score-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  border-top: 1px solid var(--line);
+  background: var(--line);
+}
+
+.score-cell {
+  padding: var(--gap) var(--gap);
+  background: var(--surface);
+}
+
+.score-cell__label {
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.score-input {
+  width: 100%;
+  padding: 10px 0;
+  margin-bottom: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 12, 67, 0.35);
+  text-align: center;
+  font-size: 20px;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.score-input:last-child {
+  margin-bottom: 0;
+}
+
+.score-input::placeholder {
+  color: var(--faint);
+}
+
+.score-input:focus {
+  border-color: var(--aqua);
+}
+
+.score-input.is-winner {
+  border-color: var(--aqua);
+  background: rgba(0, 229, 192, 0.15);
+  color: var(--aqua);
+}
+
+.hint {
+  padding: 10px var(--gap-md);
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--faint);
+}
+
+/* The best reason to open the log screen: what the match is worth, before you
+   commit it. */
+.projection {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+  padding: var(--gap-md);
+}
+
+.projection__figure {
+  margin-top: var(--gap-sm);
+  font-size: 30px;
+}
+
+.projection__empty {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding: var(--gap-md);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--faint);
+}
+
+.projection__empty svg {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* ── Open play ────────────────────────────────────────────────────────────── */
+
+.session__top {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gap);
+  padding: var(--gap-md) var(--gap-md) var(--gap);
+}
+
+.session__day {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background: var(--elevated);
+  font-size: 13px;
+}
+
+.session__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.session__venue {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.session__spots {
+  flex-shrink: 0;
+  padding: 4px var(--gap-sm);
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 500;
+  background: rgba(0, 229, 192, 0.15);
+  color: var(--aqua);
+}
+
+.session__spots.is-full {
+  background: var(--elevated);
+  color: var(--faint);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--line);
+}
+
+.fact {
+  padding: var(--gap) var(--gap);
+  border-right: 1px solid var(--line);
+}
+
+.fact:last-child {
+  border-right: 0;
+}
+
+.fact__value {
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+.session__action {
+  padding: var(--gap);
+  border-top: 1px solid var(--line);
+}
+
+/* Sparkline beside the 90-day figure on the profile. */
+.profile__spark {
+  width: 150px;
+  height: 56px;
+  flex-shrink: 0;
+}
+
+.milestone {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding: 10px var(--gap);
+  border-radius: var(--radius-sm);
+  background: var(--elevated);
+}
+
+.milestone svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--aqua);
+}
+
+/* ── Profile menu ─────────────────────────────────────────────────────────── */
+
+.menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding: var(--gap) var(--gap-md);
+  border-bottom: 1px solid var(--line);
+  transition: background 0.15s;
+}
+
+.menu__item:last-child {
+  border-bottom: 0;
+}
+
+.menu__item:hover {
+  background: var(--surface-hover);
+}
+
+.menu__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.menu__label {
+  font-size: 13px;
+}
+
+.menu__sub {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.menu__item svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  color: var(--faint);
+}
+
+/* ── Search field (players page) ──────────────────────────────────────────── */
+
+.searchbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  padding: 0 var(--gap);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.filter-btn {
+  flex-shrink: 0;
+  padding: 0 var(--gap);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--mute);
+  transition: background 0.15s, color 0.15s;
+}
+
+.filter-btn:hover {
+  color: var(--bone);
+}
+
+.filter-btn.is-active {
+  background: var(--aqua);
+  border-color: var(--aqua);
+  color: var(--on-aqua);
+}
+
+.empty {
+  padding: var(--gap-xl) var(--gap-md);
+  text-align: center;
+  font-size: 13px;
+  color: var(--faint);
+}
+
+.footnote {
+  padding: 0 4px;
+  font-size: 11px;
+  color: var(--faint);
+}

@@ -1,0 +1,67 @@
+/* ============================================================================
+   TOKENS — the only place raw colors, sizes, and fonts are allowed to appear.
+   Change a value here and it changes everywhere. Nothing below this file should
+   contain a hex code.
+   ========================================================================== */
+
+:root {
+  /* ── Canvas ───────────────────────────────────────────────────────────── */
+  --ink: #000c43; /* base color under the gradient */
+  --canvas-sweep: linear-gradient(
+    118.5deg,
+    rgba(34, 35, 157, 0.24) 0%,
+    rgba(0, 229, 192, 0.24) 100%
+  );
+
+  /* ── Surfaces ─────────────────────────────────────────────────────────────
+     These are TRANSLUCENT WHITE, never a flat color. That is what lets a card
+     sample the gradient behind it, so a card at the top of the page reads navy
+     and the same card at the bottom reads teal. Replacing these with the
+     computed hex would flatten the whole design. */
+  --surface: rgba(255, 255, 255, 0.25); /* card */
+  --surface-hover: rgba(255, 255, 255, 0.3);
+  --elevated: rgba(255, 255, 255, 0.34); /* active tab, inset, avatar fallback */
+  --line: rgba(255, 255, 255, 0.16); /* hairline */
+  --line-strong: rgba(255, 255, 255, 0.3); /* divider */
+
+  /* ── Text ─────────────────────────────────────────────────────────────── */
+  --bone: #ffffff; /* primary */
+  --mute: rgba(255, 255, 255, 0.72); /* secondary */
+  --faint: rgba(255, 255, 255, 0.5); /* labels, captions */
+
+  /* ── Brand ────────────────────────────────────────────────────────────────
+     Aqua is the accent and it is SCARCE. It has three jobs: a rating gain, the
+     active nav item, and the primary action. It is never a decorative fill. */
+  --aqua: #00e5c0;
+  --on-aqua: #004338; /* text on an aqua fill */
+  --cobalt: #22239d;
+  --loss: #ff3d5a; /* a rating drop */
+
+  /* ── Type ─────────────────────────────────────────────────────────────── */
+  --font-display: "Futura Display", "Futura", "Century Gothic", sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  /* ── Shape. Subtle, not pillowy. ──────────────────────────────────────── */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-pill: 999px;
+
+  /* ── Space ────────────────────────────────────────────────────────────── */
+  --gap-xs: 4px;
+  --gap-sm: 8px;
+  --gap: 12px;
+  --gap-md: 16px;
+  --gap-lg: 24px;
+  --gap-xl: 40px;
+
+  /* Page gutter, and the width of the desktop rail. */
+  --pad-page: 20px;
+  --rail-w: 172px;
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* The one breakpoint. Below this the rail becomes a bottom tab bar.
+   Referenced as a plain `@media (min-width: 1024px)` throughout — custom
+   properties cannot be used inside a media query, so the number is repeated
+   rather than tokenized. If it changes, grep for 1024px. */

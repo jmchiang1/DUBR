@@ -1,183 +1,22 @@
-@import "tailwindcss";
+/* ============================================================================
+   DUBR — Dynamic Universal Badminton Rating
 
-/* ── The display face is Futura BOLD. It is not in the repo and cannot be — the
-   only Futura Bold on this machine is the licensed system copy, which we are not
-   free to extract and serve. So we ask for the installed face by name first, and
-   fall back to the self-hosted Heavy weight for anyone who does not have it.
-   Bold and Heavy differ in stroke weight but share the geometry, so the fallback
-   sets the same rhythm rather than reflowing the layout. ──────────────────── */
-@font-face {
-  font-family: "Futura Display";
-  src:
-    local("Futura Bold"),
-    local("Futura-Bold"),
-    local("FuturaBT-Bold"),
-    url("/fonts/futura-heavy.otf") format("opentype");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
+   Plain CSS, no utility framework. Everything is a named, kebab-case class, so
+   to change how a thing looks you open the file it lives in and edit it.
 
-/* ── Theme: deep navy canvas, glass cards. Per the Figma.
-   Every surface is TRANSLUCENT WHITE, never a flat color — that is what makes
-   the cards pick up the cobalt→aqua sweep behind them, so a card at the top of
-   the page is navy and the same card at the bottom is teal. Substituting the
-   flattened hex would kill the whole effect. ──────────────────────────────── */
-:root {
-  --ink: #000c43; /* canvas base, under the gradient */
+   Read in this order:
+     tokens      every color, size, and font. No hex codes exist below it.
+     base        reset, the canvas, and the three type registers.
+     layout      the app shell: rail, top bar, mobile tab bar.
+     components  every reusable object — cards, matches, the board, forms.
+     utilities   a short list of layout helpers (.stack, .split, .row).
 
-  --surface: rgba(255, 255, 255, 0.25); /* card */
-  --elevated: rgba(255, 255, 255, 0.34); /* active tab / hover */
-  --line: rgba(255, 255, 255, 0.16); /* hairline */
-  --line-strong: rgba(255, 255, 255, 0.3); /* divider */
+   Naming: block__element, with state as a separate class (.is-active, .is-win,
+   .is-up). One breakpoint, at 1024px.
+   ========================================================================== */
 
-  --bone: #ffffff; /* primary text */
-  --mute: rgba(255, 255, 255, 0.72); /* secondary text */
-  --faint: rgba(255, 255, 255, 0.5); /* labels, captions */
-
-  /* On this canvas aqua is legible as text, so text and fill are the same aqua
-     — no deep-teal substitute is needed the way it was on white. */
-  --aqua-ink: #00e5c0;
-  --loss: #ff3d5a;
-}
-
-@theme inline {
-  --color-ink: var(--ink);
-  --color-surface: var(--surface);
-  --color-elevated: var(--elevated);
-  --color-line: var(--line);
-  --color-line-strong: var(--line-strong);
-
-  --color-bone: var(--bone);
-  --color-mute: var(--mute);
-  --color-faint: var(--faint);
-
-  --color-aqua-ink: var(--aqua-ink);
-  --color-loss: var(--loss);
-
-  /* Brand constants — these do not theme. Cobalt is cobalt on any background. */
-  --color-cobalt: #22239d;
-  --color-cobalt-hi: #2e2fd1;
-  --color-cobalt-lo: #14156b;
-
-  /* Aqua — SCARCE. Three jobs only: positive delta, active nav, primary action.
-     Never a decorative fill, never body text, never a background wash. */
-  --color-aqua: #00e5c0;
-  --color-on-aqua: #004338;
-
-  --font-display: "Futura Display", "Futura", "Century Gothic", sans-serif;
-  --font-body: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-
-  /* Subtle, not pillowy. */
-  --radius-sm: 8px;
-  --radius-md: 14px;
-}
-
-* {
-  border-color: var(--line);
-}
-
-html {
-  /* Overscroll rubber-band shows this, so it must be the canvas base. */
-  background: var(--ink);
-  -webkit-font-smoothing: antialiased;
-}
-
-body {
-  color: var(--bone);
-  font-family: var(--font-body);
-  /* Every number in this app is a measurement — they must align in columns and
-     never shift width as they tick. */
-  font-variant-numeric: tabular-nums;
-}
-
-/* ── THE CANVAS. Deep navy, swept diagonally from cobalt to aqua at 24%.
-   It is a brand field, not a surface: nothing is legible directly on it except
-   white, and every card above it is translucent, so each one samples a
-   different part of this sweep. Painted on a fixed pseudo-element rather than
-   with `background-attachment: fixed`, which stutters on iOS Safari. ───────── */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  background:
-    linear-gradient(
-      118.5deg,
-      rgba(34, 35, 157, 0.24) 0%,
-      rgba(0, 229, 192, 0.24) 100%
-    ),
-    var(--ink);
-}
-
-/* Text that sits on the canvas itself — page titles, deck copy, footnotes.
-   Three steps, mirroring bone/mute/faint but tuned for the gradient. */
-.canvas-fg {
-  color: #ffffff;
-}
-.canvas-mute {
-  color: rgba(255, 255, 255, 0.72);
-}
-.canvas-faint {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-/* Display type: geometric, tight, uppercase. The Olympic-signage register.
-   The weight is declared, not inherited — the face is only cut at 700, so any
-   other value would leave the browser free to synthesize a fake bold. */
-.display {
-  font-family: var(--font-display);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.01em;
-}
-
-/* Small-caps label — used for every stat caption so the eye learns a single
-   shape for "this is a label, not a value". */
-.label {
-  font-family: var(--font-body);
-  text-transform: uppercase;
-  font-size: 10px;
-  line-height: 1;
-  letter-spacing: 0.12em;
-  font-weight: 600;
-  color: var(--faint);
-}
-
-/* The rating figure itself. Optical tightening at display size. */
-.figure {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-  line-height: 0.85;
-}
-
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-.rise {
-  animation: rise 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
-    transition-duration: 0.001ms !important;
-  }
-}
-
-::selection {
-  background: #00e5c0;
-  color: #06251f;
-}
+@import "../styles/tokens.css";
+@import "../styles/base.css";
+@import "../styles/layout.css";
+@import "../styles/components.css";
+@import "../styles/utilities.css";

@@ -1,0 +1,113 @@
+/* ============================================================================
+   UTILITIES — a deliberately short list. If you find yourself wanting a fifth
+   variant of one of these, it probably wants to be a component class instead.
+   ========================================================================== */
+
+/* Vertical rhythm between the sections of a page. */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+}
+
+@media (min-width: 1024px) {
+  .stack {
+    gap: var(--gap-lg);
+  }
+}
+
+.stack--tight {
+  gap: var(--gap);
+}
+
+/* Two equal columns on desktop, stacked on mobile.
+   `min-width: 0` on the children is load-bearing: a grid item defaults to
+   min-width:auto, so it refuses to shrink below its content and a wide number
+   or a long name will push the whole page sideways. */
+.split {
+  display: grid;
+  gap: var(--gap-md);
+}
+
+.split > * {
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .split {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--gap-lg);
+  }
+}
+
+/* Same, but the left column is wider. */
+.split--wide-left {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .split--wide-left {
+    grid-template-columns: 7fr 5fr;
+  }
+}
+
+/* A responsive grid of cards. */
+.grid-cards {
+  display: grid;
+  gap: var(--gap);
+}
+
+.grid-cards > * {
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .grid-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--gap-md);
+  }
+}
+
+.grid-cards--three {
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 1024px) {
+  .grid-cards--three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* A row that pushes its last child to the far edge. */
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+}
+
+.row--between {
+  justify-content: space-between;
+}
+
+.text-mute {
+  color: var(--mute);
+}
+.text-faint {
+  color: var(--faint);
+}
+.text-aqua {
+  color: var(--aqua);
+}
+.text-loss {
+  color: var(--loss);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
