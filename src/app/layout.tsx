@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Shell } from "@/components/shell";
+import { MessagesProvider } from "@/components/messages-store";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
@@ -19,7 +20,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={inter.className}>
       <body>
-        <Shell>{children}</Shell>
+        {/* The inbox is above the Shell because the rail's unread badge and the
+            /messages page are two views of one state. */}
+        <MessagesProvider>
+          <Shell>{children}</Shell>
+        </MessagesProvider>
       </body>
     </html>
   );

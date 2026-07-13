@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { PLAYERS, DISCIPLINES, fmt } from "@/lib/dubr";
 import { SearchIcon, PinIcon } from "@/components/icons";
 
@@ -53,38 +54,40 @@ export default function Players() {
       ) : (
         <ul className="grid-cards rise" style={{ animationDelay: "80ms" }}>
           {results.map((p) => (
-            <li key={p.id} className="card player-card">
-              <span
-                className={`avatar-initials avatar-initials--lg ${
-                  p.singles === null ? "is-provisional" : ""
-                }`}
-              >
-                {p.initials}
-              </span>
+            <li key={p.id}>
+              <Link href={`/players/${p.id}`} className="card player-card">
+                <span
+                  className={`avatar-initials avatar-initials--lg ${
+                    p.singles === null ? "is-provisional" : ""
+                  }`}
+                >
+                  {p.initials}
+                </span>
 
-              <div className="player-card__body">
-                <div className="player-card__name">{p.name}</div>
-                <div className="player-card__meta">
-                  <PinIcon />
-                  <span>{p.club ?? p.location}</span>
+                <div className="player-card__body">
+                  <div className="player-card__name">{p.name}</div>
+                  <div className="player-card__meta">
+                    <PinIcon />
+                    <span>{p.club ?? p.location}</span>
+                  </div>
                 </div>
-              </div>
 
-              {/* All three discipline ratings, always — a doubles specialist and
-                  a singles specialist are different players. */}
-              <div className="chips">
-                {DISCIPLINES.map((d) => {
-                  const v = p[d.id];
-                  return (
-                    <div key={d.id} className="chip" title={`${d.label}: ${fmt(v)}`}>
-                      <div className="label">{d.label.slice(0, 1)}</div>
-                      <div className={`chip__value ${v === null ? "is-unrated" : ""}`}>
-                        {v === null ? "NR" : v.toFixed(2)}
+                {/* All three discipline ratings, always — a doubles specialist and
+                    a singles specialist are different players. */}
+                <div className="chips">
+                  {DISCIPLINES.map((d) => {
+                    const v = p[d.id];
+                    return (
+                      <div key={d.id} className="chip" title={`${d.label}: ${fmt(v)}`}>
+                        <div className="label">{d.label.slice(0, 1)}</div>
+                        <div className={`chip__value ${v === null ? "is-unrated" : ""}`}>
+                          {v === null ? "NR" : v.toFixed(2)}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              </Link>
             </li>
           ))}
         </ul>

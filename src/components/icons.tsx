@@ -108,6 +108,20 @@ export const PinIcon = (p: P) => (
   </S>
 );
 
+export const MessageIcon = (p: P) => (
+  <S {...p}>
+    <path d="M20.5 12a7.5 7.5 0 0 1-10.9 6.7L4 20l1.4-4.4A7.5 7.5 0 1 1 20.5 12Z" />
+  </S>
+);
+
+/** The composer's submit. A paper plane at 19px is mush, so this is an arrow. */
+export const SendIcon = (p: P) => (
+  <S {...p}>
+    <path d="M12 19V5" />
+    <path d="m5.5 11.5 6.5-6.5 6.5 6.5" />
+  </S>
+);
+
 export const TrophyIcon = (p: P) => (
   <S {...p}>
     <path d="M7 4h10v5a5 5 0 0 1-10 0V4Z" />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { DISCIPLINES, type Discipline, leaderboard, provisional, fmt } from "@/lib/dubr";
 
 export default function Rankings() {
@@ -51,9 +52,7 @@ export default function Rankings() {
           <div className="label board__player" style={{ paddingLeft: 42 }}>
             Player
           </div>
-          <div className="label board__club">Club</div>
           <div className="label board__record">Record</div>
-          <div className="label rel">Rel.</div>
           <div className="label board__rating">DUBR</div>
         </div>
 
@@ -61,37 +60,28 @@ export default function Rankings() {
           {rated.map((p, i) => {
             const me = p.id === "me";
             return (
-              <li key={p.id} className={`board__row ${me ? "is-me" : ""}`}>
-                <div className={`board__rank figure ${i < 3 ? "is-top" : ""}`}>{i + 1}</div>
+              <li key={p.id}>
+                <Link href={`/players/${p.id}`} className={`board__row ${me ? "is-me" : ""}`}>
+                  <div className={`board__rank figure ${i < 3 ? "is-top" : ""}`}>{i + 1}</div>
 
-                <span className="avatar-initials avatar-initials--lg">{p.initials}</span>
+                  <span className="avatar-initials avatar-initials--lg">{p.initials}</span>
 
-                <div className="board__player">
-                  <div className="board__name">
-                    <span>{p.name}</span>
-                    {me && <span className="badge-you label">You</span>}
+                  <div className="board__player">
+                    <div className="board__name">
+                      <span>{p.name}</span>
+                      {me && <span className="badge-you label">You</span>}
+                    </div>
+                    <div className="board__sub">
+                      {p.matches} matches · {Math.round((p.wins / p.matches) * 100)}% W
+                    </div>
                   </div>
-                  <div className="board__sub">
-                    {p.matches} matches · {Math.round((p.wins / p.matches) * 100)}% W
+
+                  <div className="board__record">
+                    {p.wins}–{p.matches - p.wins}
                   </div>
-                </div>
 
-                <div className="board__club">{p.club ?? "—"}</div>
-                <div className="board__record">
-                  {p.wins}–{p.matches - p.wins}
-                </div>
-
-                {/* Reliability: a thinly-tested rating looks visibly thinner. */}
-                <div className="rel">
-                  {[0, 1, 2, 3].map((s) => (
-                    <span
-                      key={s}
-                      className={`rel__seg ${p.reliability > s * 0.25 ? "is-on" : ""}`}
-                    />
-                  ))}
-                </div>
-
-                <div className="board__rating figure">{fmt(p[disc])}</div>
+                  <div className="board__rating figure">{fmt(p[disc])}</div>
+                </Link>
               </li>
             );
           })}
@@ -115,21 +105,22 @@ export default function Rankings() {
 
           <ul>
             {unrated.map((p) => (
-              <li key={p.id} className="board__row">
-                <div className="board__rank" />
-                <span className="avatar-initials avatar-initials--lg is-provisional">
-                  {p.initials}
-                </span>
-                <div className="board__player">
-                  <div className="board__name text-mute">
-                    <span>{p.name}</span>
+              <li key={p.id}>
+                <Link href={`/players/${p.id}`} className="board__row">
+                  <div className="board__rank" />
+                  <span className="avatar-initials avatar-initials--lg is-provisional">
+                    {p.initials}
+                  </span>
+                  <div className="board__player">
+                    <div className="board__name text-mute">
+                      <span>{p.name}</span>
+                    </div>
+                    <div className="board__sub">{p.matches} of 5 matches logged</div>
                   </div>
-                  <div className="board__sub">{p.matches} of 5 matches logged</div>
-                </div>
-                <div className="board__club" />
-                <div className="board__record" />
-                <div className="rel" />
-                <div className="board__rating figure is-unrated">NR</div>
+                  {/* Spacer keeps NR aligned under the DUBR column above. */}
+                  <div className="board__record" />
+                  <div className="board__rating figure is-unrated">NR</div>
+                </Link>
               </li>
             ))}
           </ul>

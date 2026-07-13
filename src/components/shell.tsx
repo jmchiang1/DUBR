@@ -2,19 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { HomeIcon, RankIcon, PlayersIcon, CalendarIcon, PlusIcon, SearchIcon } from "./icons";
+import {
+  HomeIcon,
+  RankIcon,
+  PlayersIcon,
+  CalendarIcon,
+  MessageIcon,
+  PlusIcon,
+  SearchIcon,
+} from "./icons";
+import { useMessages } from "./messages-store";
 
 /**
  * The app shell. Desktop-first: a persistent left rail that collapses to a
  * bottom tab bar below 1024px. All styling lives in styles/layout.css.
  */
-
-const NAV = [
-  { href: "/", label: "Home", Icon: HomeIcon },
-  { href: "/rankings", label: "Rankings", Icon: RankIcon },
-  { href: "/players", label: "Players", Icon: PlayersIcon },
-  { href: "/play", label: "Open Play", Icon: CalendarIcon },
-];
 
 type NavItem = {
   href: string;
@@ -23,12 +25,24 @@ type NavItem = {
   primary?: boolean;
 };
 
+const NAV: NavItem[] = [
+  { href: "/", label: "Home", Icon: HomeIcon },
+  { href: "/rankings", label: "Rankings", Icon: RankIcon },
+  { href: "/players", label: "Players", Icon: PlayersIcon },
+  { href: "/play", label: "Open Play", Icon: CalendarIcon },
+  { href: "/messages", label: "Messages", Icon: MessageIcon },
+];
+
+/* The tab bar drops Players rather than grow to six items: at 375px a sixth tab
+   puts every label under 60px and they start truncating. Players is the one you
+   reach through search and through a match card anyway — Messages is the one
+   with something WAITING in it, which is what a tab bar is for. */
 const MOBILE_NAV: NavItem[] = [
   NAV[0],
   NAV[1],
   { href: "/log", label: "Log", Icon: PlusIcon, primary: true },
-  NAV[2],
   NAV[3],
+  NAV[4],
 ];
 
 export function Wordmark({ className = "" }: { className?: string }) {
@@ -43,6 +57,9 @@ export function Avatar({ className = "avatar" }: { className?: string }) {
 export function Shell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const isActive = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
+  /* Read from the same store /messages writes to, so the badge cannot go on
+     claiming unread messages you are in the middle of reading. */
+  const { unread } = useMessages();
 
   return (
     <div className="app">
@@ -54,6 +71,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <nav className="nav">
           {NAV.map(({ href, label, Icon }) => {
             const active = isActive(href);
+            const badge = href === "/messages" && unread > 0 ? unread : 0;
             return (
               <Link
                 key={href}
@@ -63,6 +81,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
               >
                 <Icon className="nav__icon" />
                 {label}
+                {badge > 0 && (
+                  <span className="nav__badge" aria-label={`${badge} unread`}>
+                    {badge}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -102,6 +125,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <nav className="tabbar">
         {MOBILE_NAV.map(({ href, label, Icon, primary }) => {
           const active = isActive(href);
+          const badge = href === "/messages" && unread > 0;
           return (
             <Link
               key={href}
@@ -111,7 +135,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 active && !primary ? "is-active" : ""
               }`}
             >
-              <Icon className="tabbar__icon" />
+              <span className="tabbar__slot">
+                <Icon className="tabbar__icon" />
+                {/* A count is unreadable at 9px on a tab bar, so this is a dot.
+                    The rail, which has the room, prints the number. */}
+                {badge && <span className="tabbar__dot" aria-label={`${unread} unread`} />}
+              </span>
               <span className="tabbar__label label">{label}</span>
             </Link>
           );

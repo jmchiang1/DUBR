@@ -125,6 +125,17 @@
   width: 100%;
 }
 
+/* Sits inside a card header, where the full-size button would dominate. */
+.btn--sm {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.btn--sm svg {
+  width: 14px;
+  height: 14px;
+}
+
 /* The rail's primary action. */
 .sidebar .btn--primary {
   margin-top: var(--gap-lg);
@@ -189,6 +200,44 @@
   width: 32px;
   height: 32px;
   font-size: 11px;
+}
+
+.avatar-initials--xl {
+  width: 56px;
+  height: 56px;
+  font-size: 18px;
+  font-family: var(--font-display);
+}
+
+@media (min-width: 1024px) {
+  .avatar-initials--xl {
+    width: 64px;
+    height: 64px;
+    font-size: 20px;
+  }
+}
+
+/* Back to where you came from. A detail page reached from a board needs a way
+   out of it that is not the browser button. */
+.backlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  font-size: 12px;
+  color: var(--mute);
+  transition: color 0.15s;
+}
+
+.backlink:hover {
+  color: var(--bone);
+}
+
+/* The chevron points forward; this one points back. */
+.backlink svg {
+  width: 14px;
+  height: 14px;
+  transform: rotate(180deg);
 }
 
 /* An empty slot in a form shows a plus rather than initials. */
@@ -811,31 +860,19 @@
   color: var(--faint);
 }
 
-/* Columns the desktop width can afford. Hidden on mobile rather than crushed
-   into ellipses. */
-.board__club,
+/* Record. With Club and Reliability gone the row has the width to carry this at
+   every size, so it is no longer hidden on mobile. */
 .board__record {
-  display: none;
+  width: 52px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 12px;
+  color: var(--mute);
 }
 
 @media (min-width: 1024px) {
-  .board__club {
-    display: block;
-    width: 160px;
-    flex-shrink: 0;
-    font-size: 12px;
-    color: var(--mute);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
   .board__record {
-    display: block;
     width: 64px;
-    flex-shrink: 0;
-    text-align: right;
-    font-size: 12px;
-    color: var(--mute);
   }
 }
 
@@ -1290,4 +1327,370 @@
   padding: 0 4px;
   font-size: 11px;
   color: var(--faint);
+}
+
+/* ── Messages ─────────────────────────────────────────────────────────────
+   Two panes on desktop, one at a time below 1024px. The list column is fixed
+   because a conversation row is a fixed thing — name, preview, time — while the
+   thread wants every pixel that is left. */
+
+.inbox {
+  display: grid;
+  gap: var(--gap-md);
+  /* The inbox is sized to the VIEWPORT, not to its contents: the composer has to
+     be on screen without scrolling, or the one thing you came here to do is below
+     the fold. What is subtracted is the chrome around it — the sticky top bar
+     (~56px), the page heading (~76px), and the content padding (24px top, 112px
+     bottom, which is what clears the tab bar). Rounded up for the safe-area inset. */
+  height: calc(100dvh - 300px);
+  min-height: 360px;
+}
+
+@media (min-width: 1024px) {
+  .inbox {
+    /* No tab bar and no sticky bar up here, so the budget is different — and the
+       rail's own height means there is plenty of it. */
+    height: min(680px, calc(100dvh - 220px));
+    min-height: 420px;
+    grid-template-columns: 340px minmax(0, 1fr);
+    gap: var(--gap-lg);
+  }
+}
+
+.inbox__list {
+  overflow-y: auto;
+  padding: var(--gap-sm);
+}
+
+/* Below 1024px the two panes share one column, so exactly one is on screen:
+   the list, until you open a thread. */
+@media (max-width: 1023px) {
+  .inbox .thread {
+    display: none;
+  }
+  .inbox.is-open .inbox__list {
+    display: none;
+  }
+  .inbox.is-open .thread {
+    display: flex;
+  }
+}
+
+/* ── A row in the list ────────────────────────────────────────────────────── */
+
+.convo {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  width: 100%;
+  padding: var(--gap);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.convo:hover {
+  background: var(--surface-hover);
+}
+
+.convo.is-active {
+  background: var(--elevated);
+}
+
+.convo__body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.convo__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+}
+
+.convo__name {
+  font-size: 14px;
+  color: var(--mute);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.convo__when {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--faint);
+}
+
+/* One line, clipped. A preview that wraps is a message, and the point of a
+   preview is that you have to open it. */
+.convo__preview {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.convo__you {
+  color: var(--mute);
+}
+
+/* Unread is carried by WEIGHT and by the count, not by colour — an inbox where
+   every unread row glows aqua spends the accent on nothing. */
+.convo.is-unread .convo__name {
+  font-weight: 600;
+  color: var(--bone);
+}
+
+.convo.is-unread .convo__preview {
+  color: var(--mute);
+}
+
+.convo__unread {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--aqua);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--on-aqua);
+}
+
+/* ── The open thread ──────────────────────────────────────────────────────── */
+
+.thread {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.thread__head {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  flex-shrink: 0;
+  padding: var(--gap) var(--gap-md);
+  border-bottom: 1px solid var(--line);
+}
+
+.thread__back {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  margin-left: -6px;
+  border-radius: var(--radius-sm);
+  color: var(--mute);
+  /* Points back, not forward. */
+  transform: rotate(180deg);
+}
+
+.thread__back:hover {
+  background: var(--surface-hover);
+  color: var(--bone);
+}
+
+.thread__back svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (min-width: 1024px) {
+  .thread__back {
+    display: none;
+  }
+}
+
+.thread__who {
+  flex: 1;
+  min-width: 0;
+}
+
+.thread__name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--bone);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.thread__meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 3px;
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.thread__meta svg {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.thread__rating {
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.thread__figure {
+  font-size: 18px;
+  color: var(--bone);
+}
+
+/* The composer is the action on this screen. Logging a match is the action the
+   conversation is FOR, so it is here, but quietly. */
+.thread__log {
+  display: none;
+  flex-shrink: 0;
+  padding: 8px var(--gap);
+  font-size: 13px;
+}
+
+@media (min-width: 1280px) {
+  .thread__log {
+    display: inline-flex;
+  }
+}
+
+.thread__scroll {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--gap-md);
+}
+
+.thread--empty {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap);
+  color: var(--faint);
+  font-size: 13px;
+}
+
+@media (min-width: 1024px) {
+  .thread--empty {
+    display: flex;
+  }
+}
+
+.thread__empty-icon {
+  width: 28px;
+  height: 28px;
+  opacity: 0.5;
+}
+
+/* ── Bubbles ──────────────────────────────────────────────────────────────
+   Theirs on the left in the surface colour, mine on the right in aqua. This is
+   the one place aqua is allowed to be a large fill: it is not decoration, it is
+   the only thing distinguishing who said what. */
+
+.bubble {
+  max-width: min(78%, 520px);
+  align-self: flex-start;
+  padding: var(--gap-sm) var(--gap);
+  border-radius: var(--radius-md);
+  border-bottom-left-radius: var(--radius-sm);
+  background: var(--elevated);
+}
+
+.bubble.is-mine {
+  align-self: flex-end;
+  border-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-sm);
+  background: var(--aqua);
+}
+
+.bubble__text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--bone);
+}
+
+.bubble.is-mine .bubble__text {
+  color: var(--on-aqua);
+}
+
+.bubble__at {
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--faint);
+}
+
+.bubble.is-mine .bubble__at {
+  color: rgba(0, 67, 56, 0.65);
+  text-align: right;
+}
+
+/* ── Composer ─────────────────────────────────────────────────────────────── */
+
+.composer {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  flex-shrink: 0;
+  padding: var(--gap);
+  border-top: 1px solid var(--line);
+}
+
+.composer__input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px var(--gap);
+  border-radius: var(--radius-pill);
+  background: var(--elevated);
+  font-size: 13px;
+  color: var(--bone);
+}
+
+.composer__input::placeholder {
+  color: var(--faint);
+}
+
+.composer__input:focus {
+  outline: 2px solid var(--aqua);
+  outline-offset: -1px;
+}
+
+.composer__send {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  background: var(--aqua);
+  color: var(--on-aqua);
+  transition: opacity 0.15s;
+}
+
+.composer__send svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* An empty message is not a message. Disabled, not hidden — the control has to
+   stay where the eye left it. */
+.composer__send:disabled {
+  background: var(--elevated);
+  color: var(--faint);
+  cursor: not-allowed;
 }

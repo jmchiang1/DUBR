@@ -96,6 +96,22 @@
   flex-shrink: 0;
 }
 
+/* The count of unread messages, pushed to the end of the rail item. The rail has
+   the width to print the number; the tab bar does not, and uses a dot. */
+.nav__badge {
+  display: grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  margin-left: auto;
+  padding: 0 5px;
+  border-radius: var(--radius-pill);
+  background: var(--aqua);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--on-aqua);
+}
+
 /* ── Main column ──────────────────────────────────────────────────────────── */
 
 .main {
@@ -252,9 +268,29 @@
   background: var(--aqua);
 }
 
+/* Positioning context for the unread dot, so the dot rides the icon rather than
+   the tab — it has to sit on the glyph even as the label wraps or the tab grows. */
+.tabbar__slot {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
 .tabbar__icon {
   width: 19px;
   height: 19px;
+}
+
+.tabbar__dot {
+  position: absolute;
+  top: -2px;
+  right: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--aqua);
+  /* Ringed in the bar's own colour so it reads as ON the icon, not behind it. */
+  box-shadow: 0 0 0 2px rgba(0, 12, 67, 0.85);
 }
 
 .tabbar__label {

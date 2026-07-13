@@ -568,3 +568,91 @@ export function leaderboard(discipline: Discipline): Player[] {
 export function provisional(discipline: Discipline): Player[] {
   return PLAYERS.filter((p) => p[discipline] === null);
 }
+
+/* ── A single player ──────────────────────────────────────────────────────── */
+
+export function getPlayer(id: string): Player | undefined {
+  return PLAYERS.find((p) => p.id === id);
+}
+
+export function rankOf(id: string, discipline: Discipline): number | null {
+  const i = leaderboard(discipline).findIndex((p) => p.id === id);
+  return i === -1 ? null : i + 1;
+}
+
+/**
+ * A rating trajectory for a player we hold no real history for.
+ *
+ * DETERMINISTIC, and that is the whole point: it is seeded off the player's id,
+ * so the server and the client generate the identical series. `Math.random()`
+ * here would produce a different line on each, and React would throw a
+ * hydration mismatch. It also means a player's curve never changes between
+ * visits, which a random one would.
+ *
+ * This is mock data standing in for a real per-player history endpoint. It ends
+ * exactly on the player's current rating, so the chart and the headline number
+ * can never disagree.
+ */
+export function syntheticHistory(player: Player, discipline: Discipline): number[] {
+  const end = player[discipline];
+  if (end === null) return [];
+
+  const n = Math.min(Math.max(player.matches, 3), 16);
+
+  // xorshift-ish PRNG seeded from the id — small, deterministic, good enough.
+  let seed = 0;
+  for (const c of player.id + discipline) seed = (seed * 31 + c.charCodeAt(0)) >>> 0;
+  const rand = () => {
+    seed ^= seed << 13;
+    seed ^= seed >>> 17;
+    seed ^= seed << 5;
+    seed >>>= 0;
+    return seed / 0xffffffff;
+  };
+
+  /* The overall DIRECTION is set by the player's record, not by chance. An
+     unbiased random walk gave the #1 player — 80% wins, top of the board — a
+     falling red trajectory, which flatly contradicts every other number on the
+     page. A winning record trends up; a losing one trends down. */
+  const winRate = player.matches ? player.wins / player.matches : 0.5;
+  const drift = (winRate - 0.5) * 0.6; // 80% wins ⇒ +0.18 over the window
+  const start = end - drift;
+
+  /* A less reliable rating has been bouncing around more on its way here. */
+  const wobble = 0.05 * (1.4 - player.reliability);
+
+  return Array.from({ length: n }, (_, i) => {
+    // Anchor both ends: the last point IS the rating printed above the chart.
+    if (i === n - 1) return end;
+    if (i === 0) return Number(start.toFixed(3));
+    const base = start + (end - start) * (i / (n - 1));
+    return Number((base + (rand() - 0.5) * wobble).toFixed(3));
+  });
+}
+
+/** Every match this player appears in, most recent first. */
+export function matchesFor(player: Player): Match[] {
+  return MATCHES.filter((m) =>
+    [...m.mine.players, ...m.theirs.players].some((p) => p.name === player.name),
+  );
+}
+
+/**
+ * Your record against this player. Only counts matches where they were on the
+ * OTHER side — playing alongside someone tells you nothing about beating them.
+ */
+export function headToHead(player: Player): { wins: number; losses: number } {
+  let wins = 0;
+  let losses = 0;
+
+  for (const m of MATCHES) {
+    const iPlayed = m.mine.players.some((p) => p.me);
+    if (!iPlayed) continue;
+    const theyOpposed = m.theirs.players.some((p) => p.name === player.name);
+    if (!theyOpposed) continue;
+    if (m.won) wins++;
+    else losses++;
+  }
+
+  return { wins, losses };
+}
