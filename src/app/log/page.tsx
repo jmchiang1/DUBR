@@ -70,20 +70,24 @@ export default function LogMatch() {
   const complete = decided && opp1 !== null && (!isDoubles || (partner !== null && opp2 !== null));
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4 lg:space-y-6">
       <header className="rise">
-        <h1 className="display text-[26px]">Log a Match</h1>
-        <p className="mt-1.5 text-[13px] text-mute">
+        <h1 className="display canvas-fg text-[26px] lg:text-[32px]">Log a Match</h1>
+        <p className="canvas-mute mt-1.5 text-[13px] lg:text-[14px]">
           Your opponent confirms it, then both ratings move.
         </p>
       </header>
 
+      {/* Two columns on desktop: who played on the left, what happened on the
+          right. On mobile it stacks into the same reading order. */}
+      <div className="grid gap-4 lg:grid-cols-2 lg:items-start lg:gap-6">
+        <div className="space-y-4">
       {/* Discipline */}
       <section
-        className="rise overflow-hidden rounded-[14px] border border-line/60 bg-surface"
+        className="rise overflow-hidden rounded-[14px] border border-line bg-surface"
         style={{ animationDelay: "40ms" }}
       >
-        <div className="flex divide-x divide-line/60">
+        <div className="flex divide-x divide-line">
           {DISCIPLINES.map((d) => {
             const active = d.id === disc;
             return (
@@ -110,7 +114,7 @@ export default function LogMatch() {
 
       {/* Teams */}
       <section
-        className="rise space-y-px overflow-hidden rounded-[14px] border border-line/60 bg-surface"
+        className="rise space-y-px overflow-hidden rounded-[14px] border border-line bg-surface"
         style={{ animationDelay: "80ms" }}
       >
         <div className="px-4 pt-3.5 pb-2">
@@ -127,7 +131,7 @@ export default function LogMatch() {
         </div>
 
         {isDoubles && (
-          <div className="border-t border-line/40 px-4 py-3">
+          <div className="border-t border-line px-4 py-3">
             <PlayerSelect
               value={partner}
               onChange={setPartner}
@@ -137,7 +141,7 @@ export default function LogMatch() {
           </div>
         )}
 
-        <div className="border-t border-line/40 px-4 pt-3.5 pb-2">
+        <div className="border-t border-line px-4 pt-3.5 pb-2">
           <div className="label">Opponents</div>
         </div>
         <div className="space-y-2 px-4 pb-4">
@@ -157,11 +161,13 @@ export default function LogMatch() {
           )}
         </div>
       </section>
+        </div>
 
+        <div className="space-y-4">
       {/* Score — badminton is best-of-three to 21, so the grid is three games,
           not the five-game pickleball grid DUPR uses. */}
       <section
-        className="rise overflow-hidden rounded-[14px] border border-line/60 bg-surface"
+        className="rise overflow-hidden rounded-[14px] border border-line bg-surface"
         style={{ animationDelay: "120ms" }}
       >
         <div className="flex items-center justify-between px-4 py-3.5">
@@ -169,7 +175,7 @@ export default function LogMatch() {
           <div className="text-[11px] text-faint">Best of 3 · to 21</div>
         </div>
 
-        <div className="grid grid-cols-3 gap-px border-t border-line/40 bg-line/40">
+        <div className="grid grid-cols-3 gap-px border-t border-line bg-line">
           {games.map((g, i) => {
             const settled = g[0] !== "" && g[1] !== "" && Number(g[0]) !== Number(g[1]);
             const winner = settled && Number(g[0]) > Number(g[1]);
@@ -198,7 +204,7 @@ export default function LogMatch() {
         {/* Third game is only played if the match is split — say so rather than
             leaving an input that looks required. */}
         {tally.us + tally.them < 2 && (
-          <p className="border-t border-line/40 px-4 py-2.5 text-[11px] text-faint">
+          <p className="border-t border-line px-4 py-2.5 text-[11px] text-faint">
             Leave game 3 empty if the match ended in two.
           </p>
         )}
@@ -210,7 +216,7 @@ export default function LogMatch() {
         className={`rise overflow-hidden rounded-[14px] border transition-colors ${
           projected !== null
             ? "border-cobalt-hi/40 bg-gradient-to-b from-cobalt to-cobalt-lo"
-            : "border-line/60 bg-surface"
+            : "border-line bg-surface"
         }`}
         style={{ animationDelay: "160ms" }}
       >
@@ -256,6 +262,8 @@ export default function LogMatch() {
       >
         {complete ? "Submit for confirmation" : "Add players and a score"}
       </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -280,7 +288,7 @@ function ScoreInput({
       className={`figure w-full rounded-[8px] border py-2.5 text-center text-[20px] outline-none transition-colors focus:border-aqua ${
         highlight
           ? "border-aqua/40 bg-aqua/10 text-aqua-ink"
-          : "border-line/70 bg-ink text-bone placeholder:text-faint"
+          : "border-line bg-ink text-bone placeholder:text-faint"
       }`}
     />
   );
@@ -300,7 +308,7 @@ function PlayerSelect({
   const selected = PLAYERS.find((p) => p.id === value);
 
   return (
-    <div className="flex items-center gap-3 rounded-[8px] border border-line/70 bg-ink px-3 py-2">
+    <div className="flex items-center gap-3 rounded-[8px] border border-line bg-ink px-3 py-2">
       <div
         className={`grid h-8 w-8 shrink-0 place-items-center rounded-full border text-[11px] font-semibold ${
           selected

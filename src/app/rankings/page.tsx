@@ -16,15 +16,16 @@ export default function Rankings() {
   return (
     <div className="space-y-3">
       <header className="rise">
-        <h1 className="display text-[26px]">Rankings</h1>
-        <p className="mt-1.5 text-[13px] text-mute">
+        <h1 className="display canvas-fg text-[26px] lg:text-[32px]">Rankings</h1>
+        <p className="canvas-mute mt-1.5 text-[13px] lg:text-[14px]">
           Every rated player, ordered by DUBR. Updated after each confirmed match.
         </p>
       </header>
 
-      {/* Discipline selector — a segmented rule, not a pill row. */}
+      {/* Discipline selector — a segmented rule, not a pill row. It sits on the
+          gradient canvas, so its rule and labels are white, not --line/--bone. */}
       <div
-        className="rise flex gap-6 border-b border-line/60"
+        className="rise flex gap-6 border-b border-white/20"
         style={{ animationDelay: "40ms" }}
       >
         {DISCIPLINES.map((d) => {
@@ -35,7 +36,7 @@ export default function Rankings() {
               onClick={() => setDisc(d.id)}
               aria-pressed={active}
               className={`relative -mb-px pb-2.5 text-[13px] transition-colors ${
-                active ? "text-bone" : "text-faint hover:text-mute"
+                active ? "text-white" : "text-white/50 hover:text-white/80"
               }`}
             >
               {d.label}
@@ -51,7 +52,7 @@ export default function Rankings() {
 
       {/* Summary — the three facts that frame the board. */}
       <section
-        className="rise grid grid-cols-3 divide-x divide-line/60 rounded-[14px] border border-line/60 bg-surface"
+        className="rise grid grid-cols-3 divide-x divide-line rounded-[14px] border border-line bg-surface"
         style={{ animationDelay: "80ms" }}
       >
         <Stat label="Top DUBR" value={top.toFixed(3)} />
@@ -62,24 +63,28 @@ export default function Rankings() {
       {/* ── The board. Rank is set in the display face at a fixed width so the
              column stays true; no medal emoji, no per-row card. Rows are rows. */}
       <section
-        className="rise overflow-hidden rounded-[14px] border border-line/60 bg-surface"
+        className="rise overflow-hidden rounded-[14px] border border-line bg-surface"
         style={{ animationDelay: "120ms" }}
       >
-        <div className="flex items-center gap-2.5 border-b border-line/50 px-3 py-2.5">
+        <div className="flex items-center gap-2.5 border-b border-line px-3 py-2.5 lg:px-4">
           <div className="label w-5">#</div>
           <div className="label flex-1 pl-[42px]">Player</div>
+          {/* Columns the desktop width can actually afford. On mobile these are
+              hidden rather than crushed into ellipses. */}
+          <div className="label hidden w-40 lg:block">Club</div>
+          <div className="label hidden w-16 text-right lg:block">Record</div>
           <div className="label w-9 text-right">Rel.</div>
-          <div className="label w-[52px] text-right">DUBR</div>
+          <div className="label w-[52px] text-right lg:w-[64px]">DUBR</div>
         </div>
 
-        <ul className="divide-y divide-line/40">
+        <ul className="divide-y divide-line">
           {rated.map((p, i) => {
             const me = p.id === "me";
             return (
               <li
                 key={p.id}
-                className={`flex items-center gap-2.5 px-3 py-3 transition-colors ${
-                  me ? "bg-cobalt/25" : "hover:bg-elevated/40"
+                className={`flex items-center gap-2.5 px-3 py-3 transition-colors lg:px-4 ${
+                  me ? "bg-cobalt/10" : "hover:bg-elevated/60"
                 }`}
               >
                 <div
@@ -111,6 +116,13 @@ export default function Rankings() {
                   </div>
                 </div>
 
+                <div className="hidden w-40 shrink-0 truncate text-[12px] text-mute lg:block">
+                  {p.club ?? "—"}
+                </div>
+                <div className="hidden w-16 shrink-0 text-right text-[12px] tabular-nums text-mute lg:block">
+                  {p.wins}–{p.matches - p.wins}
+                </div>
+
                 {/* Reliability as a 4-segment gauge — reads at a glance, and
                     makes a thinly-tested rating visibly thinner. */}
                 <div className="flex w-9 shrink-0 justify-end gap-[2px]">
@@ -124,7 +136,7 @@ export default function Rankings() {
                   ))}
                 </div>
 
-                <div className="figure w-[52px] shrink-0 text-right text-[16px] text-bone">
+                <div className="figure w-[52px] shrink-0 text-right text-[16px] text-bone lg:w-[64px] lg:text-[18px]">
                   {fmt(p[disc])}
                 </div>
               </li>
@@ -139,10 +151,10 @@ export default function Rankings() {
              made every real rating above them look invented too. */}
       {unrated.length > 0 && (
         <section
-          className="rise overflow-hidden rounded-[14px] border border-line/60 bg-surface"
+          className="rise overflow-hidden rounded-[14px] border border-line bg-surface"
           style={{ animationDelay: "160ms" }}
         >
-          <div className="border-b border-line/50 px-4 py-3">
+          <div className="border-b border-line px-4 py-3">
             <h2 className="display text-[12px] text-mute">Provisional</h2>
             <p className="mt-1 text-[11px] leading-relaxed text-faint">
               Not enough matches to place on the scale. These players are unrated — they are not
@@ -150,7 +162,7 @@ export default function Rankings() {
             </p>
           </div>
 
-          <ul className="divide-y divide-line/40">
+          <ul className="divide-y divide-line">
             {unrated.map((p) => (
               <li key={p.id} className="flex items-center gap-2.5 px-3 py-3">
                 <div className="w-5 shrink-0" />
@@ -163,7 +175,13 @@ export default function Rankings() {
                     {p.matches} of 5 matches logged
                   </div>
                 </div>
-                <div className="figure w-[52px] shrink-0 text-right text-[15px] text-faint">NR</div>
+                {/* Spacers keep the NR column aligned with the DUBR column above. */}
+                <div className="hidden w-40 shrink-0 lg:block" />
+                <div className="hidden w-16 shrink-0 lg:block" />
+                <div className="w-9 shrink-0" />
+                <div className="figure w-[52px] shrink-0 text-right text-[15px] text-faint lg:w-[64px]">
+                  NR
+                </div>
               </li>
             ))}
           </ul>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Trend } from "@/components/rating-rail";
+import { Trend } from "@/components/trend-chart";
 import { ChevronIcon, PinIcon, TrophyIcon } from "@/components/icons";
 import { ME, TREND, DISCIPLINES, MATCHES, fmt, levelFor, fmtDelta } from "@/lib/dubr";
 
@@ -18,7 +18,7 @@ export default function Profile() {
     <div className="space-y-3">
       {/* Identity. One card, and the rating card is NOT this card — the old
           design fused them, which made the profile shout as loudly as home. */}
-      <section className="rise flex items-center gap-4 rounded-[14px] border border-line/60 bg-surface px-4 py-4">
+      <section className="rise flex items-center gap-4 rounded-[14px] border border-line bg-surface px-4 py-4">
         <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full border border-line bg-elevated">
           <span className="display text-[17px] text-bone">{ME.initials}</span>
         </div>
@@ -41,7 +41,7 @@ export default function Profile() {
       {/* All three ratings at once. A badminton player is three numbers, not
           one — mixed being NR is information, not a gap to paper over. */}
       <section
-        className="rise grid grid-cols-3 divide-x divide-line/60 rounded-[14px] border border-line/60 bg-surface"
+        className="rise grid grid-cols-3 divide-x divide-line rounded-[14px] border border-line bg-surface"
         style={{ animationDelay: "40ms" }}
       >
         {DISCIPLINES.map((d) => {
@@ -65,7 +65,7 @@ export default function Profile() {
       {/* 90-day trajectory. A real chart of a real number, not four invented
           "skill dimension" bars derived from nothing. */}
       <section
-        className="rise rounded-[14px] border border-line/60 bg-surface px-4 py-4"
+        className="rise rounded-[14px] border border-line bg-surface px-4 py-4"
         style={{ animationDelay: "80ms" }}
       >
         <div className="flex items-start justify-between">
@@ -82,10 +82,12 @@ export default function Profile() {
               </span>
             </div>
           </div>
-          <Trend points={TREND} className="h-12 w-36" />
+          {/* The one place the trajectory is the subject rather than a garnish,
+              so it is the interactive register: hover any point for its rating. */}
+          <Trend points={TREND} className="h-12 w-36" interactive />
         </div>
 
-        <div className="mt-4 grid grid-cols-3 divide-x divide-line/50 border-t border-line/40 pt-3.5">
+        <div className="mt-4 grid grid-cols-3 divide-x divide-line border-t border-line pt-3.5">
           <Mini label="Matches" value={String(ME.matches)} />
           <Mini label="Wins" value={String(ME.wins)} />
           <Mini label="Best Win" value="5.932" />
@@ -95,7 +97,7 @@ export default function Profile() {
       {/* Achievements: earned only. The old design showed 8 locked hexagons and
           one earned, which is mostly a display of what you have not done. */}
       <section
-        className="rise rounded-[14px] border border-line/60 bg-surface px-4 py-4"
+        className="rise rounded-[14px] border border-line bg-surface px-4 py-4"
         style={{ animationDelay: "120ms" }}
       >
         <div className="flex items-center justify-between">
@@ -112,10 +114,10 @@ export default function Profile() {
       </section>
 
       <section
-        className="rise overflow-hidden rounded-[14px] border border-line/60 bg-surface"
+        className="rise overflow-hidden rounded-[14px] border border-line bg-surface"
         style={{ animationDelay: "160ms" }}
       >
-        <ul className="divide-y divide-line/40">
+        <ul className="divide-y divide-line">
           {MENU.map((m) => (
             <li key={m.label}>
               <Link
@@ -133,7 +135,7 @@ export default function Profile() {
         </ul>
       </section>
 
-      <button className="rise w-full rounded-[8px] border border-line/60 bg-surface py-3 text-[13px] text-mute transition-colors hover:border-loss/40 hover:text-loss">
+      <button className="rise w-full rounded-[8px] border border-line bg-surface py-3 text-[13px] text-mute transition-colors hover:border-loss/40 hover:text-loss">
         Sign out
       </button>
     </div>
@@ -151,7 +153,7 @@ function Mini({ label, value }: { label: string; value: string }) {
 
 function Milestone({ title, sub }: { title: string; sub: string }) {
   return (
-    <li className="flex items-center gap-3 rounded-[8px] border border-line/50 bg-elevated/50 px-3 py-2.5">
+    <li className="flex items-center gap-3 rounded-[8px] border border-line bg-elevated/50 px-3 py-2.5">
       <TrophyIcon className="h-4 w-4 shrink-0 text-aqua-ink" />
       <div className="min-w-0">
         <div className="text-[12px] text-bone">{title}</div>

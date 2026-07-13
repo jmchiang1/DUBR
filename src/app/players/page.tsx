@@ -24,14 +24,14 @@ export default function Players() {
   return (
     <div className="space-y-3">
       <header className="rise">
-        <h1 className="display text-[26px]">Players</h1>
-        <p className="mt-1.5 text-[13px] text-mute">
+        <h1 className="display canvas-fg text-[26px] lg:text-[32px]">Players</h1>
+        <p className="canvas-mute mt-1.5 text-[13px] lg:text-[14px]">
           A close match makes a better game — and moves your rating more.
         </p>
       </header>
 
-      <div className="rise flex gap-2" style={{ animationDelay: "40ms" }}>
-        <div className="flex flex-1 items-center gap-2.5 rounded-[8px] border border-line/70 bg-surface px-3">
+      <div className="rise flex gap-2 lg:max-w-lg" style={{ animationDelay: "40ms" }}>
+        <div className="flex flex-1 items-center gap-2.5 rounded-[8px] border border-line bg-surface px-3">
           <SearchIcon className="h-4 w-4 shrink-0 text-faint" />
           <input
             value={q}
@@ -47,27 +47,27 @@ export default function Players() {
           className={`shrink-0 rounded-[8px] border px-3 text-[12px] font-medium transition-colors ${
             nearMe
               ? "border-aqua bg-aqua text-on-aqua"
-              : "border-line/70 bg-surface text-mute hover:text-bone"
+              : "border-line bg-surface text-mute hover:text-bone"
           }`}
         >
           Near my level
         </button>
       </div>
 
-      <section
-        className="rise overflow-hidden rounded-[14px] border border-line/60 bg-surface"
-        style={{ animationDelay: "80ms" }}
-      >
+      {/* On desktop the directory becomes a two-up grid of cards. A single
+          full-width row at 1280px leaves a player's name stranded a foot away
+          from their rating. */}
+      <section className="rise" style={{ animationDelay: "80ms" }}>
         {results.length === 0 ? (
-          <p className="px-4 py-10 text-center text-[13px] text-faint">
+          <p className="rounded-[14px] border border-line bg-surface px-4 py-10 text-center text-[13px] text-faint">
             No players match “{q}”.
           </p>
         ) : (
-          <ul className="divide-y divide-line/40">
+          <ul className="grid gap-3 lg:grid-cols-2">
             {results.map((p) => (
               <li
                 key={p.id}
-                className="flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-elevated/40"
+                className="flex min-w-0 items-center gap-3 rounded-[14px] border border-line bg-surface px-3 py-3.5 transition-colors hover:bg-elevated/60 lg:px-4"
               >
                 <div
                   className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border text-[12px] font-semibold ${
@@ -90,7 +90,7 @@ export default function Players() {
                 {/* All three discipline ratings, always — a doubles specialist
                     and a singles specialist are different players, and hiding
                     two of the three numbers hides that. */}
-                <div className="flex shrink-0 gap-px overflow-hidden rounded-[8px] border border-line/70">
+                <div className="flex shrink-0 gap-px overflow-hidden rounded-[8px] border border-line">
                   {DISCIPLINES.map((d) => {
                     const v = p[d.id];
                     return (
@@ -117,7 +117,7 @@ export default function Players() {
         )}
       </section>
 
-      <p className="rise px-1 text-[11px] text-faint" style={{ animationDelay: "120ms" }}>
+      <p className="rise canvas-faint px-1 text-[11px]" style={{ animationDelay: "120ms" }}>
         Showing {results.length} of {PLAYERS.length - 1} players.{" "}
         {results.some((p) => p.singles === null) &&
           "Unrated players show NR until they have logged 5 matches."}

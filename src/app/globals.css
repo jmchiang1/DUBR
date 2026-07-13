@@ -11,20 +11,56 @@
   font-display: swap;
 }
 
-@theme {
-  /* Surfaces — three real levels. Canvas < card < inset. Hierarchy comes from
-     this ramp, not from borders and shadows piled onto identical rectangles. */
-  --color-ink: #161616;
-  --color-surface: #18181b;
-  --color-elevated: #27272a;
-  --color-line: #3f3f46;
+/* ── Theme. LIGHT IS THE DEFAULT. Dark is opt-in via [data-theme="dark"] —
+   deliberately NOT wired to prefers-color-scheme, so a user on a dark OS still
+   gets the light app unless they ask for dark. ──────────────────────────── */
+:root {
+  --ink: #fafaf9; /* canvas */
+  --surface: #ffffff; /* card */
+  --elevated: #f1f1f3; /* inset / hover */
+  --line: #e2e2e5; /* hairline */
+  --line-strong: #d4d4d8; /* structural divider */
 
-  /* Text */
-  --color-bone: #ffffff;
-  --color-mute: #a1a1aa;
-  --color-faint: #6b6b74;
+  --bone: #18181b; /* primary text */
+  --mute: #52525b; /* secondary text */
+  --faint: #8a8a93; /* labels, captions */
 
-  /* Brand */
+  /* Aqua is brilliant but illegible as text on white — so on light surfaces the
+     TEXT form of the accent is the deep teal, while the FILL form stays aqua. */
+  --aqua-ink: #00806b;
+  --loss: #c2410c;
+}
+
+[data-theme="dark"] {
+  --ink: #161616;
+  --surface: #18181b;
+  --elevated: #27272a;
+  --line: #2c2c31;
+  --line-strong: #3f3f46;
+
+  --bone: #ffffff;
+  --mute: #a1a1aa;
+  --faint: #6b6b74;
+
+  --aqua-ink: #4ff0d6;
+  --loss: #f4634e;
+}
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-surface: var(--surface);
+  --color-elevated: var(--elevated);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-bone: var(--bone);
+  --color-mute: var(--mute);
+  --color-faint: var(--faint);
+
+  --color-aqua-ink: var(--aqua-ink);
+  --color-loss: var(--loss);
+
+  /* Brand constants — these do not theme. Cobalt is cobalt on any background. */
   --color-cobalt: #22239d;
   --color-cobalt-hi: #2e2fd1;
   --color-cobalt-lo: #14156b;
@@ -32,10 +68,7 @@
   /* Aqua — SCARCE. Three jobs only: positive delta, active nav, primary action.
      Never a decorative fill, never body text, never a background wash. */
   --color-aqua: #00e5c0;
-  --color-aqua-ink: #4ff0d6;
   --color-on-aqua: #06251f;
-
-  --color-loss: #f4634e;
 
   --font-display: "Futura Heavy", "Futura", "Century Gothic", sans-serif;
   --font-body: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
@@ -46,21 +79,50 @@
 }
 
 * {
-  border-color: var(--color-line);
+  border-color: var(--line);
 }
 
 html {
-  background: var(--color-ink);
+  /* Overscroll rubber-band shows this, so it must be the gradient's top color
+     rather than the neutral canvas. */
+  background: var(--color-cobalt-lo);
   -webkit-font-smoothing: antialiased;
 }
 
 body {
-  background: var(--color-ink);
-  color: var(--color-bone);
+  color: var(--bone);
   font-family: var(--font-body);
   /* Every number in this app is a measurement — they must align in columns and
      never shift width as they tick. */
   font-variant-numeric: tabular-nums;
+}
+
+/* ── THE CANVAS. Cobalt falling to deep cobalt, with a single aqua bloom in the
+   bottom-right. It is a brand field, not a surface: nothing is legible directly
+   on it except white, and every piece of real content sits on an opaque card
+   above it. Painted on a fixed pseudo-element rather than with
+   `background-attachment: fixed`, which stutters on iOS Safari. ───────────── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(115% 85% at 88% 105%, rgba(0, 229, 192, 0.85) 0%, rgba(0, 229, 192, 0) 55%),
+    radial-gradient(85% 65% at 2% -5%, var(--color-cobalt-hi) 0%, rgba(46, 47, 209, 0) 60%),
+    linear-gradient(168deg, var(--color-cobalt) 0%, #1b1c86 48%, var(--color-cobalt-lo) 100%);
+}
+
+/* Text that sits on the canvas itself — page titles, deck copy, footnotes.
+   Three steps, mirroring bone/mute/faint but tuned for the gradient. */
+.canvas-fg {
+  color: #ffffff;
+}
+.canvas-mute {
+  color: rgba(255, 255, 255, 0.72);
+}
+.canvas-faint {
+  color: rgba(255, 255, 255, 0.5);
 }
 
 /* Display type: geometric, tight, uppercase. The Olympic-signage register. */
@@ -79,7 +141,7 @@ body {
   line-height: 1;
   letter-spacing: 0.12em;
   font-weight: 600;
-  color: var(--color-faint);
+  color: var(--faint);
 }
 
 /* The rating figure itself. Optical tightening at display size. */
@@ -88,15 +150,6 @@ body {
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
   line-height: 0.85;
-}
-
-/* Faint engineering grid — makes the canvas read as measurement substrate
-   (graph paper) rather than a flat void. Barely perceptible by design. */
-.substrate {
-  background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.022) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
-  background-size: 32px 32px;
 }
 
 @keyframes rise {
@@ -124,6 +177,6 @@ body {
 }
 
 ::selection {
-  background: var(--color-aqua);
-  color: var(--color-on-aqua);
+  background: #00e5c0;
+  color: #06251f;
 }

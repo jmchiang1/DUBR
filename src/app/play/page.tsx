@@ -42,12 +42,12 @@ export default function OpenPlay() {
     <div className="space-y-3">
       <header className="rise">
         <div className="flex items-center gap-2">
-          <h1 className="display text-[26px]">Open Play</h1>
+          <h1 className="display canvas-fg text-[26px]">Open Play</h1>
           <span className="label rounded-[4px] border border-line bg-elevated px-1.5 py-1 !text-[8px] !text-mute">
             Preview
           </span>
         </div>
-        <p className="mt-1.5 text-[13px] text-mute">
+        <p className="canvas-mute mt-1.5 text-[13px]">
           Rated sessions. Everything you play here counts toward your DUBR.
         </p>
       </header>
@@ -58,7 +58,7 @@ export default function OpenPlay() {
           return (
             <li
               key={s.venue}
-              className="rise overflow-hidden rounded-[14px] border border-line/60 bg-surface"
+              className="rise overflow-hidden rounded-[14px] border border-line bg-surface"
               style={{ animationDelay: `${40 + i * 40}ms` }}
             >
               <div className="flex items-start gap-3 px-4 pt-4 pb-3">
@@ -87,13 +87,13 @@ export default function OpenPlay() {
               </div>
 
               {/* The three facts that decide whether you show up. */}
-              <div className="grid grid-cols-3 divide-x divide-line/50 border-t border-line/40">
+              <div className="grid grid-cols-3 divide-x divide-line border-t border-line">
                 <Fact label="Time" value={s.time} />
                 <Fact label="DUBR Band" value={s.band} />
                 <Fact label="Courts" value={String(s.courts)} />
               </div>
 
-              <div className="border-t border-line/40 p-3">
+              <div className="border-t border-line p-3">
                 <button
                   disabled={full}
                   className="w-full rounded-[8px] bg-aqua py-2.5 text-[13px] font-semibold text-on-aqua transition-opacity hover:opacity-90 disabled:bg-elevated disabled:text-faint"
@@ -107,7 +107,7 @@ export default function OpenPlay() {
       </ul>
 
       <section
-        className="rise flex items-start gap-3 rounded-[14px] border border-line/60 bg-surface px-4 py-4"
+        className="rise flex items-start gap-3 rounded-[14px] border border-line bg-surface px-4 py-4"
         style={{ animationDelay: "200ms" }}
       >
         <ShuttleIcon className="mt-0.5 h-5 w-5 shrink-0 text-faint" />
@@ -120,7 +120,7 @@ export default function OpenPlay() {
         </div>
       </section>
 
-      <div className="rise flex items-center gap-2 px-1 text-[11px] text-faint" style={{ animationDelay: "240ms" }}>
+      <div className="rise canvas-faint flex items-center gap-2 px-1 text-[11px]" style={{ animationDelay: "240ms" }}>
         <CalendarIcon className="h-3.5 w-3.5" />
         Times shown in your local timezone.
       </div>
