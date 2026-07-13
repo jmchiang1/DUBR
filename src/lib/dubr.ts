@@ -380,10 +380,184 @@ export const MATCHES: Match[] = [
   },
 ];
 
-/** Last 8 rating points, oldest → newest. Drives the sparkline.
-    The final step MUST equal the delta on the most recent match in MATCHES —
-    the hero and the feed sit on the same screen and cannot disagree. */
-export const TREND = [5.201, 5.188, 5.24, 5.229, 5.277, 5.268, 5.241, 5.302];
+/** One rating, on the day a match moved it there. */
+export type RatingPoint = {
+  /** MM/DD/YYYY, same format as Match.date. */
+  date: string;
+  rating: number;
+};
+
+/**
+ * A year of singles rating, oldest → newest. A rating is a walk, not a curve:
+ * it goes down as well as up, and the chart is only worth anything if it says so.
+ *
+ * The last five points land on the dates of the five matches in MATCHES, and the
+ * final step MUST equal the delta on the most recent one — the hero number and
+ * the feed sit on the same screen and cannot disagree.
+ */
+export const HISTORY: RatingPoint[] = [
+  { date: "07/12/2025", rating: 4.98 },
+  { date: "07/16/2025", rating: 4.973 },
+  { date: "07/19/2025", rating: 4.987 },
+  { date: "07/22/2025", rating: 5.0 },
+  { date: "07/25/2025", rating: 4.989 },
+  { date: "07/29/2025", rating: 4.994 },
+  { date: "08/03/2025", rating: 5.009 },
+  { date: "08/07/2025", rating: 5.024 },
+  { date: "08/10/2025", rating: 5.009 },
+  { date: "08/13/2025", rating: 4.996 },
+  { date: "08/16/2025", rating: 4.987 },
+  { date: "08/19/2025", rating: 4.98 },
+  { date: "08/22/2025", rating: 4.991 },
+  { date: "08/26/2025", rating: 4.997 },
+  { date: "08/30/2025", rating: 4.989 },
+  { date: "09/03/2025", rating: 5.001 },
+  { date: "09/07/2025", rating: 5.012 },
+  { date: "09/11/2025", rating: 4.998 },
+  { date: "09/15/2025", rating: 5.008 },
+  { date: "09/20/2025", rating: 5.014 },
+  { date: "09/25/2025", rating: 5.0 },
+  { date: "09/29/2025", rating: 5.01 },
+  { date: "10/02/2025", rating: 5.015 },
+  { date: "10/06/2025", rating: 5.03 },
+  { date: "10/09/2025", rating: 5.045 },
+  { date: "10/14/2025", rating: 5.06 },
+  { date: "10/17/2025", rating: 5.054 },
+  { date: "10/22/2025", rating: 5.042 },
+  { date: "10/25/2025", rating: 5.036 },
+  { date: "10/29/2025", rating: 5.022 },
+  { date: "11/02/2025", rating: 5.037 },
+  { date: "11/05/2025", rating: 5.052 },
+  { date: "11/08/2025", rating: 5.057 },
+  { date: "11/13/2025", rating: 5.049 },
+  { date: "11/16/2025", rating: 5.041 },
+  { date: "11/21/2025", rating: 5.048 },
+  { date: "11/26/2025", rating: 5.052 },
+  { date: "11/30/2025", rating: 5.043 },
+  { date: "12/03/2025", rating: 5.036 },
+  { date: "12/07/2025", rating: 5.051 },
+  { date: "12/11/2025", rating: 5.064 },
+  { date: "12/14/2025", rating: 5.053 },
+  { date: "12/19/2025", rating: 5.059 },
+  { date: "12/23/2025", rating: 5.066 },
+  { date: "12/26/2025", rating: 5.075 },
+  { date: "12/31/2025", rating: 5.07 },
+  { date: "01/03/2026", rating: 5.056 },
+  { date: "01/06/2026", rating: 5.066 },
+  { date: "01/10/2026", rating: 5.072 },
+  { date: "01/14/2026", rating: 5.087 },
+  { date: "01/18/2026", rating: 5.103 },
+  { date: "01/22/2026", rating: 5.094 },
+  { date: "01/25/2026", rating: 5.078 },
+  { date: "01/30/2026", rating: 5.093 },
+  { date: "02/02/2026", rating: 5.082 },
+  { date: "02/05/2026", rating: 5.088 },
+  { date: "02/10/2026", rating: 5.083 },
+  { date: "02/14/2026", rating: 5.092 },
+  { date: "02/19/2026", rating: 5.106 },
+  { date: "02/23/2026", rating: 5.121 },
+  { date: "02/27/2026", rating: 5.113 },
+  { date: "03/03/2026", rating: 5.126 },
+  { date: "03/07/2026", rating: 5.136 },
+  { date: "03/12/2026", rating: 5.141 },
+  { date: "03/17/2026", rating: 5.151 },
+  { date: "03/20/2026", rating: 5.142 },
+  { date: "03/25/2026", rating: 5.153 },
+  { date: "03/29/2026", rating: 5.161 },
+  { date: "04/02/2026", rating: 5.175 },
+  { date: "04/07/2026", rating: 5.161 },
+  { date: "04/11/2026", rating: 5.172 },
+  { date: "04/16/2026", rating: 5.181 },
+  { date: "04/20/2026", rating: 5.194 },
+  { date: "04/23/2026", rating: 5.206 },
+  { date: "04/27/2026", rating: 5.193 },
+  { date: "05/02/2026", rating: 5.186 },
+  { date: "05/06/2026", rating: 5.194 },
+  { date: "05/09/2026", rating: 5.18 },
+  { date: "05/13/2026", rating: 5.194 },
+  { date: "05/16/2026", rating: 5.201 },
+  { date: "05/19/2026", rating: 5.19 },
+  { date: "05/24/2026", rating: 5.201 },
+  { date: "05/31/2026", rating: 5.188 },
+  { date: "06/07/2026", rating: 5.24 },
+  { date: "06/14/2026", rating: 5.229 },
+  { date: "06/21/2026", rating: 5.277 },
+  { date: "06/28/2026", rating: 5.268 },
+  { date: "07/02/2026", rating: 5.241 },
+  { date: "07/09/2026", rating: 5.302 },
+];
+
+/** Last 8 rating points, oldest → newest. Drives the profile sparkline. */
+export const TREND: number[] = HISTORY.slice(-8).map((p) => p.rating);
+
+/** MM/DD/YYYY → Date. Built field by field, because `new Date("07/09/2026")`
+    is parsed in the runtime's local zone by some engines and UTC by others. */
+export function parseDate(date: string): Date {
+  const [m, d, y] = date.split("/").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+export type Range = "week" | "month" | "year";
+
+export const RANGES: { id: Range; label: string; name: string; days: number }[] = [
+  { id: "week", label: "1W", name: "Past week", days: 7 },
+  { id: "month", label: "1M", name: "Past month", days: 30 },
+  { id: "year", label: "1Y", name: "Past year", days: 365 },
+];
+
+/**
+ * The window is measured back from the LAST MATCH, not from today. A player who
+ * has not played in three weeks still has a "past week" of form to look at — an
+ * empty chart would be reporting on the calendar, not on them.
+ */
+export function historyFor(range: Range): RatingPoint[] {
+  const days = RANGES.find((r) => r.id === range)!.days;
+  const last = parseDate(HISTORY[HISTORY.length - 1].date);
+  const floor = last.getTime() - days * 86_400_000;
+  const window = HISTORY.filter((p) => parseDate(p.date).getTime() >= floor);
+  /* A line needs two points. Rather than draw nothing, reach back for one more. */
+  return window.length >= 2 ? window : HISTORY.slice(-2);
+}
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/**
+ * Where to put a label on the x axis, and what it should say.
+ *
+ * Over a year the unit the eye wants is the month, so a tick lands on the first
+ * point of each month and says only "Sep" — a date would be noise at that width.
+ * Shorter windows have no month boundaries to speak of, so they fall back to the
+ * day, thinned so the labels never collide.
+ */
+export function axisTicks(points: RatingPoint[], range: Range): { index: number; label: string }[] {
+  if (range === "year") {
+    const ticks: { index: number; label: string }[] = [];
+    let month = -1;
+    points.forEach((p, i) => {
+      const d = parseDate(p.date);
+      if (d.getMonth() === month) return;
+      month = d.getMonth();
+      ticks.push({ index: i, label: MONTHS[month] });
+    });
+    return ticks;
+  }
+
+  const last = points.length - 1;
+  const every = Math.max(1, Math.ceil(last / 5));
+  const indices: number[] = [];
+  for (let i = 0; i <= last; i += every) indices.push(i);
+  /* The last point always gets a tick — it is the one being read. If the stride
+     left one too close to it, that one goes rather than crowd the label. */
+  if (indices[indices.length - 1] !== last) {
+    if (last - indices[indices.length - 1] < every / 2) indices.pop();
+    indices.push(last);
+  }
+
+  return indices.map((i) => {
+    const d = parseDate(points[i].date);
+    return { index: i, label: `${MONTHS[d.getMonth()]} ${d.getDate()}` };
+  });
+}
 
 export function leaderboard(discipline: Discipline): Player[] {
   return [...PLAYERS]

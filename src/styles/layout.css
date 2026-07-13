@@ -37,7 +37,11 @@
 .sidebar__brand {
   display: block;
   margin-bottom: var(--gap-xl);
-  font-size: 44px;
+  font-size: var(--wordmark-size);
+  /* Futura Heavy ships one weight, so this is inert on the real face — it only
+     matters for the fallback stack (Futura / Century Gothic / system sans),
+     which would otherwise render the mark at regular weight. */
+  font-weight: 700;
 }
 
 .nav {
@@ -150,8 +154,11 @@
   }
 }
 
+/* The mobile bar is 56px tall, so the wordmark cannot be the full 64px here —
+   it would not fit its own header. It scales down instead. */
 .topbar__brand {
-  font-size: 22px;
+  font-size: var(--wordmark-size-mobile);
+  font-weight: 700;
 }
 
 @media (min-width: 1024px) {

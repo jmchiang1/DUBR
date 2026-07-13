@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Trend } from "@/components/trend-chart";
 import { MatchCard } from "@/components/match-card";
@@ -11,7 +11,11 @@ import {
   MATCHES,
   TREND,
   DISCIPLINES,
+  RANGES,
+  axisTicks,
+  historyFor,
   type Discipline,
+  type Range,
   fmt,
   fmtDelta,
   levelFor,
@@ -21,6 +25,15 @@ import {
 
 export default function Home() {
   const [disc, setDisc] = useState<Discipline>("singles");
+  const [range, setRange] = useState<Range>("year");
+
+  /* Memoized, and not as a micro-optimization: react-chartjs-2 keys its update
+     effect on the IDENTITY of the arrays it is handed, so a fresh slice on every
+     render would call chart.update() and restart the draw animation mid-flight —
+     switching discipline would jolt the line. */
+  const span = useMemo(() => historyFor(range), [range]);
+  const series = useMemo(() => span.map((p) => p.rating), [span]);
+  const ticks = useMemo(() => axisTicks(span, range), [span, range]);
 
   const rating = ME[disc];
   const rated = rating !== null;
@@ -96,10 +109,37 @@ export default function Home() {
                 </div>
 
                 {/* The trajectory fills the remaining height, so this card and
-                    the statistics card beside it end on the same line. */}
+                    the statistics card beside it end on the same line. The chart
+                    draws its own month strip along the bottom; the range control
+                    sits directly under it, because the two are one instrument —
+                    the pill says what span the months are counting. */}
                 <div className="chart">
-                  <div className="label">Last {TREND.length} Matches</div>
-                  <Trend points={TREND} interactive delay={260} className="chart__canvas" />
+                  <div className="label">Rating Trajectory</div>
+                  <Trend
+                    points={series}
+                    ticks={ticks}
+                    interactive
+                    delay={260}
+                    className="chart__canvas"
+                  />
+                  <div className="chart__foot">
+                    <span className="chart__span">
+                      {series.length} {series.length === 1 ? "match" : "matches"}
+                    </span>
+                    <div className="range" role="group" aria-label="Chart range">
+                      {RANGES.map((r) => (
+                        <button
+                          key={r.id}
+                          onClick={() => setRange(r.id)}
+                          aria-pressed={range === r.id}
+                          aria-label={r.name}
+                          className={`range__btn ${range === r.id ? "is-active" : ""}`}
+                        >
+                          {r.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </>
             ) : (

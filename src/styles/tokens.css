@@ -37,9 +37,20 @@
   --cobalt: #22239d;
   --loss: #ff3d5a; /* a rating drop */
 
-  /* ── Type ─────────────────────────────────────────────────────────────── */
+  /* ── Type ─────────────────────────────────────────────────────────────────
+     The display face is Futura HEAVY (futura-heavy.otf) — the only Futura the
+     brand ships. There is no Futura Bold file in the project, and macOS's own
+     Futura.ttc carries only Medium / Medium Italic / Condensed ExtraBold, so
+     asking for `font-weight: bold` here changes nothing: the single weight in
+     the file is used whatever weight is requested. Heavy is a step above Bold,
+     so it reads bolder, not lighter. Drop a Futura Bold .otf into
+     /public/fonts and add a second @font-face in base.css to change this. */
   --font-display: "Futura Display", "Futura", "Century Gothic", sans-serif;
   --font-body: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  /* The wordmark. */
+  --wordmark-size: 64px;
+  --wordmark-size-mobile: 28px;
 
   /* ── Shape. Subtle, not pillowy. ──────────────────────────────────────── */
   --radius-sm: 8px;
