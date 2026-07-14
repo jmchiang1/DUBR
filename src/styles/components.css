@@ -1587,20 +1587,155 @@
   color: var(--faint);
 }
 
-/* What cannot be edited, said out loud rather than left as a gap the user has to
-   go hunting for. */
-.editor__locked {
-  padding: var(--gap) var(--gap-md);
+/* ── Earned on court ──────────────────────────────────────────────────────
+   The stats you cannot edit, SHOWN. Sunk into the card rather than raised out of
+   it — the editable fields above sit on the surface, and these sit below it, which
+   is the whole point being made. */
+.earned {
+  padding: var(--gap-md);
   border-radius: var(--radius-sm);
   background: rgba(0, 12, 67, 0.35);
-  font-size: 12px;
-  line-height: 1.5;
+}
+
+.earned__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.earned__lock {
+  width: 13px;
+  height: 13px;
   color: var(--faint);
+}
+
+.earned__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gap) var(--gap-md);
+  margin: var(--gap-md) 0;
+}
+
+.earned__value {
+  margin-top: 4px;
+  font-size: 17px;
+  /* MUTED, not white. These are real numbers, but they are not fields — the form's
+     live values are the bright ones, and the eye should be able to tell in a glance
+     which half of this dialog it can actually touch. */
+  color: var(--mute);
+  font-variant-numeric: tabular-nums;
 }
 
 .editor__error {
   font-size: 12px;
   color: var(--loss);
+}
+
+/* ── Modal ────────────────────────────────────────────────────────────────
+   A native <dialog>, so the top layer, the focus trap, `inert` on the rest of the
+   page and Escape all come from the platform. What is styled here is only the
+   look: the backdrop, the panel, and the fact that the panel scrolls rather than
+   the page behind it. */
+
+.modal {
+  /* The <dialog> itself is the full-viewport hit area — the visible box is the
+     panel inside it. That is what makes "did the click land on the backdrop" a
+     simple `e.target === dialog` test. */
+  max-width: 100vw;
+  max-height: 100dvh;
+  width: 100%;
+  height: 100%;
+  padding: var(--gap-md);
+  border: 0;
+  background: none;
+  /* A dialog in the top layer is centred by the UA's default margin:auto; this
+     grid does it explicitly so the panel stays centred while it grows. */
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.modal:not([open]) {
+  display: none;
+}
+
+.modal::backdrop {
+  background: rgba(0, 8, 44, 0.62);
+  backdrop-filter: blur(3px);
+}
+
+.modal__panel {
+  display: flex;
+  flex-direction: column;
+  width: min(560px, 100%);
+  max-height: min(760px, calc(100dvh - var(--gap-xl)));
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  /* Opaque, unlike a .card. A card samples the gradient BEHIND it, which is the
+     page; a modal floats over a blurred backdrop, and a translucent panel there
+     just smears whatever it happens to be covering. */
+  background: #1b2a6b;
+  box-shadow: 0 24px 60px rgba(0, 8, 44, 0.5);
+  animation: modal-in 0.18s ease-out;
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal__panel {
+    animation: none;
+  }
+}
+
+.modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+  flex-shrink: 0;
+  padding: var(--gap-md) var(--gap-md) var(--gap);
+  border-bottom: 1px solid var(--line);
+}
+
+.modal__title {
+  font-size: 20px;
+}
+
+.modal__close {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  color: var(--mute);
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.modal__close:hover {
+  background: var(--elevated);
+  color: var(--bone);
+}
+
+.modal__close svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* The BODY scrolls, not the dialog — so the header stays put and the form's own
+   Save/Cancel row scrolls up into view with the content it belongs to. */
+.modal__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--gap-md);
 }
 
 .editor__actions {
@@ -2569,4 +2704,194 @@
   background: var(--elevated);
   color: var(--faint);
   cursor: not-allowed;
+}
+
+/* ── Profile: the account page ────────────────────────────────────────────
+   Home carries the rating and the stats; /players/me is the public page. This
+   page holds only what neither of those can: matches awaiting your confirmation,
+   what you are signed up for, how settled each rating is, and your account. */
+
+/* The DUBR ID. How another player adds you at a court, with no search and no
+   spelling of your name — so it is one tap to copy. */
+.id-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 12, 67, 0.35);
+  transition: border-color 0.15s;
+}
+
+.id-chip:hover {
+  border-color: var(--aqua);
+}
+
+.id-chip__value {
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: var(--bone);
+}
+
+.id-chip svg {
+  width: 14px;
+  height: 14px;
+  color: var(--faint);
+}
+
+.count-pill {
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: var(--aqua);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--on-aqua);
+}
+
+/* ── A match awaiting confirmation ────────────────────────────────────────── */
+
+.result-pill.is-pending {
+  background: rgba(255, 196, 61, 0.18);
+  color: #ffc43d;
+}
+
+.match__logged {
+  margin-top: var(--gap-md);
+  padding-top: var(--gap);
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--faint);
+}
+
+.match__logged strong {
+  color: var(--mute);
+  font-weight: 600;
+}
+
+/* Dispute is a full-size button, not a link. A confirmation flow where the
+   agreeable answer is easy and the disagreeable answer is hidden is a nudge, and
+   a rating moved by a nudge is worth nothing. */
+.match__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--gap-sm);
+  margin-top: var(--gap);
+}
+
+/* ── Rating confidence ────────────────────────────────────────────────────── */
+
+.conf {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+  margin-top: var(--gap-md);
+}
+
+.conf__row {
+  padding-top: var(--gap-md);
+  border-top: 1px solid var(--line);
+}
+
+.conf__row:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.conf__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gap);
+}
+
+.conf__name {
+  font-size: 13px;
+  color: var(--mute);
+}
+
+.conf__value {
+  font-size: 18px;
+}
+
+.conf__bar {
+  height: 5px;
+  margin-top: var(--gap-sm);
+  border-radius: var(--radius-pill);
+  background: rgba(0, 12, 67, 0.4);
+  overflow: hidden;
+}
+
+.conf__fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--aqua);
+}
+
+.conf__sub {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--faint);
+}
+
+/* ── Registered events ────────────────────────────────────────────────────── */
+
+.reg {
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--gap-sm);
+}
+
+.reg__row {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding: var(--gap) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.reg__row:last-child {
+  border-bottom: 0;
+}
+
+.reg__icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--elevated);
+}
+
+.reg__icon svg {
+  width: 15px;
+  height: 15px;
+  color: var(--mute);
+}
+
+.reg__name {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reg__meta {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu__item .reg__icon {
+  margin-right: 0;
 }

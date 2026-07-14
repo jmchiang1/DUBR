@@ -347,6 +347,74 @@ export const PLAYERS: Player[] = [
   },
 ];
 
+/**
+ * A match somebody else logged, waiting on YOU.
+ *
+ * The log screen promises "your opponent confirms it, then both ratings move" —
+ * so a match logged against you has to land somewhere you can accept or dispute
+ * it. Without this the promise is a lie and a rating can be moved by a score you
+ * never agreed to, which is the one thing a rating system cannot allow.
+ */
+export type PendingMatch = {
+  id: string;
+  event: string;
+  date: string;
+  location: string;
+  discipline: Discipline;
+  /** Who submitted the score. */
+  loggedBy: string;
+  mine: MatchSide;
+  theirs: MatchSide;
+  won: boolean;
+  /** What confirming this will do to your rating. Shown BEFORE you confirm. */
+  projected: number;
+};
+
+export const PENDING: PendingMatch[] = [
+  {
+    id: "pm1",
+    event: "Kotofit LIC — Tuesday Open Play",
+    date: "07/12/2026",
+    location: "Long Island City, NY",
+    discipline: "doubles",
+    loggedBy: "Sarah Tanaka",
+    won: true,
+    projected: 0.052,
+    mine: {
+      games: [21, 21],
+      players: [
+        { name: "Jonathan Chiang", rating: 5.302, delta: 0.052, me: true },
+        { name: "Sarah Tanaka", rating: 5.39, delta: 0.047 },
+      ],
+    },
+    theirs: {
+      games: [17, 19],
+      players: [
+        { name: "Owen Zhang", rating: 5.042, delta: -0.041 },
+        { name: "Amal Shaj", rating: 4.803, delta: -0.038 },
+      ],
+    },
+  },
+  {
+    id: "pm2",
+    event: "Kotofit JC — Singles Ladder",
+    date: "07/11/2026",
+    location: "Jersey City, NJ",
+    discipline: "singles",
+    loggedBy: "Kevin Cheng",
+    won: false,
+    projected: -0.031,
+    mine: {
+      games: [18, 16],
+      players: [{ name: "Jonathan Chiang", rating: 5.302, delta: -0.031, me: true }],
+    },
+    theirs: {
+      games: [21, 21],
+      players: [{ name: "Kevin Cheng", rating: 5.932, delta: 0.014 }],
+    },
+  },
+];
+
 export const MATCHES: Match[] = [
   {
     id: "m1",

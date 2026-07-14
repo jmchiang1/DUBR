@@ -1,9 +1,9 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { CLUBS, DAYS, HANDS, useProfile, type Profile } from "./profile-store";
-import type { Day } from "@/lib/dubr";
-import { PinIcon } from "./icons";
+import { useProfile, type Profile } from "./profile-store";
+import { LockIcon, PinIcon } from "./icons";
+import { DISCIPLINES, ME, fmt, rankOf } from "@/lib/dubr";
 
 /**
  * The profile editor.
@@ -12,11 +12,11 @@ import { PinIcon } from "./icons";
  * change — a form that writes through on every keystroke has no cancel, it just
  * has undo you have to perform by hand.
  *
- * What is editable is deliberately limited to what a player OWNS: their name,
- * where they play, which hand, when they are free. The rating, the rank, the
- * record and the match history are not editable and never will be — they are
- * earned on court, and a rating system whose subjects can type their own number
- * into it is not a rating system.
+ * What is editable is deliberately limited to what a player OWNS: their photo,
+ * their name, where they are. The rating, the rank, the record and the match
+ * history are not editable and never will be — they are earned on court, and a
+ * rating system whose subjects can type their own number into it is not a
+ * rating system.
  */
 export function ProfileEditor({ onDone }: { onDone: () => void }) {
   const { profile, save } = useProfile();
@@ -24,17 +24,10 @@ export function ProfileEditor({ onDone }: { onDone: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
+  const rank = rankOf("me", "singles");
+
   const set = <K extends keyof Profile>(key: K, value: Profile[K]) =>
     setDraft((d) => ({ ...d, [key]: value }));
-
-  const toggleDay = (day: Day) =>
-    setDraft((d) => ({
-      ...d,
-      availability: d.availability.includes(day)
-        ? d.availability.filter((x) => x !== day)
-        : /* Keep the week in order, so Sat·Mon never renders before Mon·Sat. */
-          DAYS.filter((x) => x === day || d.availability.includes(x)),
-    }));
 
   const pickPhoto = (file: File) => {
     /* Guard the size: a data URL goes straight into localStorage, which caps out
@@ -64,13 +57,9 @@ export function ProfileEditor({ onDone }: { onDone: () => void }) {
   };
 
   return (
-    <form className="card card--pad editor rise" onSubmit={submit}>
-      <div className="row row--between">
-        <h2 className="display" style={{ fontSize: 20 }}>
-          Edit Profile
-        </h2>
-      </div>
-
+    /* No card, no heading, no `.rise` — this renders INSIDE a modal now, which
+       supplies its own surface, title and entrance. */
+    <form className="editor" onSubmit={submit}>
       {/* Photo */}
       <div className="editor__photo">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -126,64 +115,37 @@ export function ProfileEditor({ onDone }: { onDone: () => void }) {
         </div>
       </label>
 
-      <label className="field-row">
-        <span className="label">Club</span>
-        <select
-          className="input"
-          value={draft.club}
-          onChange={(e) => set("club", e.target.value)}
-        >
-          {CLUBS.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-      </label>
+      {/* ── EARNED ───────────────────────────────────────────────────────
+          The note under this used to name four things — rating, rank, record,
+          match history — that appeared NOWHERE on the form. A sentence telling you
+          what you cannot edit, next to no sign of the thing, reads as an apology
+          for a missing feature: the eye goes looking for the greyed-out field and
+          does not find it.
 
-      <div className="field-row">
-        <span className="label">Playing hand</span>
-        <div className="segmented">
-          {HANDS.map((h) => (
-            <button
-              key={h}
-              type="button"
-              onClick={() => set("hand", h)}
-              aria-pressed={draft.hand === h}
-              className={`segmented__btn ${draft.hand === h ? "is-active" : ""}`}
-            >
-              {h}
-            </button>
-          ))}
+          So the numbers are here, shown for real and shown as LOCKED. Now the
+          sentence is a caption for something you can see, and the form makes its
+          argument instead of asserting it: this is your record, it is not a field,
+          and the only way to change it is to play. */}
+      <div className="earned">
+        <div className="earned__head">
+          <LockIcon className="earned__lock" />
+          <span className="label">Earned on court</span>
         </div>
-      </div>
 
-      <div className="field-row">
-        <span className="label">Usually free to play</span>
-        <div className="days">
-          {DAYS.map((d) => (
-            <button
-              key={d}
-              type="button"
-              onClick={() => toggleDay(d)}
-              aria-pressed={draft.availability.includes(d)}
-              className={`day ${draft.availability.includes(d) ? "is-active" : ""}`}
-            >
-              {d}
-            </button>
+        <div className="earned__grid">
+          {DISCIPLINES.map((d) => (
+            <Earned key={d.id} label={d.label} value={fmt(ME[d.id])} />
           ))}
+          <Earned label="Rank" value={rank ? `#${rank}` : "NR"} />
+          <Earned label="Record" value={`${ME.wins}–${ME.matches - ME.wins}`} />
+          <Earned label="Matches" value={String(ME.matches)} />
         </div>
+
         <p className="editor__hint">
-          This is what Events and “find me a game” read. Leave it empty and you will not be
-          suggested to anyone.
+          Not editable, and never will be. A rating system whose subjects can type
+          their own number into it is not a rating system.
         </p>
       </div>
-
-      {/* What cannot be edited, said out loud rather than left as a gap the user
-          has to go hunting for. */}
-      <p className="editor__locked">
-        Your rating, rank, record and match history are not editable — they are earned on court.
-      </p>
 
       {error && (
         <p className="editor__error" role="alert">
@@ -200,5 +162,17 @@ export function ProfileEditor({ onDone }: { onDone: () => void }) {
         </button>
       </div>
     </form>
+  );
+}
+
+/** A number you did not type and cannot. Deliberately shaped like the fields
+    above it — same label, same slot — so the contrast lands: this is what a field
+    looks like when the value is not yours to set. */
+function Earned({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="earned__item">
+      <div className="label">{label}</div>
+      <div className="earned__value figure">{value}</div>
+    </div>
   );
 }

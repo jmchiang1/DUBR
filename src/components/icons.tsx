@@ -128,6 +128,13 @@ export const CloseIcon = (p: P) => (
   </S>
 );
 
+export const CopyIcon = (p: P) => (
+  <S {...p}>
+    <rect x="9" y="9" width="11" height="11" rx="2" />
+    <path d="M5 15V6a2 2 0 0 1 2-2h8" />
+  </S>
+);
+
 /** Sliders, not a funnel: the panel behind this button is mostly ranges. */
 export const FilterIcon = (p: P) => (
   <S {...p}>
@@ -135,6 +142,13 @@ export const FilterIcon = (p: P) => (
     <path d="M4 17h2M10 17h10" />
     <circle cx="16" cy="7" r="2.2" />
     <circle cx="8" cy="17" r="2.2" />
+  </S>
+);
+
+export const LockIcon = (p: P) => (
+  <S {...p}>
+    <rect x="4.5" y="10.5" width="15" height="9.5" rx="2" />
+    <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
   </S>
 );
 

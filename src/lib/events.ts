@@ -336,3 +336,16 @@ export function fmtBand(band: [number, number] | null): string {
 export function fmtDistance(miles: number): string {
   return miles < 100 ? `${miles.toFixed(1)} mi` : `${Math.round(miles).toLocaleString()} mi`;
 }
+
+/* ── What I have signed up for ────────────────────────────────────────────
+   Registrations live nowhere else in the app: /events shows what EXISTS, and
+   the home dashboard shows what has already happened. What you are committed to
+   next has no home until the profile gives it one. */
+
+export const MY_EVENT_IDS = ["e1", "e3", "e2"];
+
+export function myEvents(): BadmintonEvent[] {
+  return MY_EVENT_IDS.map((id) => EVENTS.find((e) => e.id === id)).filter(
+    (e): e is BadmintonEvent => Boolean(e),
+  );
+}

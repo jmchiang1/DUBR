@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { ME, DAYS, type Day } from "@/lib/dubr";
+import { ME } from "@/lib/dubr";
 
 /**
  * The player's own profile, shared by the rail, the home header, and /profile.
@@ -12,22 +12,14 @@ import { ME, DAYS, type Day } from "@/lib/dubr";
  * not exist yet — swap `load`/`persist` for fetch calls and nothing else moves.
  */
 
-export const CLUBS = ["Kotofit LIC", "Kotofit Flushing", "Kotofit JC", "No club"] as const;
-export const HANDS = ["Right", "Left"] as const;
 
-/* DAYS is re-exported from the data layer rather than redeclared here. Your
-   availability and a roster player's `days` are the same field — "find me a
-   game" has to read the same seven strings on both sides of the match, and two
-   independent lists would eventually drift. */
-export { DAYS };
-
+/* Playing hand, club and availability are gone. A club is a fact about a
+   building, not a person; hand was never read by anything; and availability
+   belonged to a "find me a game" matcher that does not exist yet. A settings
+   field nothing consumes is a promise the app does not keep. */
 export type Profile = {
   name: string;
   location: string;
-  club: string;
-  hand: (typeof HANDS)[number];
-  /** Days you are usually free to play — this is what "find me a game" reads. */
-  availability: Day[];
   /** A data URL when the user has picked their own photo, else the default. */
   avatar: string;
 };
@@ -35,13 +27,6 @@ export type Profile = {
 const DEFAULTS: Profile = {
   name: ME.name,
   location: ME.location,
-  /* A club is no longer part of a PLAYER — a facility is a fact about a building,
-     not about a person, so it came off every player bio. It survives here as one
-     of YOUR OWN settings, which is a different thing: a preference you set, not a
-     label the directory hangs on you. Nobody else's club is shown anywhere. */
-  club: CLUBS[0],
-  hand: "Right",
-  availability: ["Tue", "Thu", "Sat"],
   avatar: "/avatar.jpg",
 };
 
