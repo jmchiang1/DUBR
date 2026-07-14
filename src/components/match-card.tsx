@@ -1,4 +1,7 @@
+"use client";
+
 import { ArrowUpIcon, ArrowDownIcon, PinIcon } from "./icons";
+import { Avatar } from "./shell";
 import { fmtDelta, type Match, type MatchSide, type MatchPlayer } from "@/lib/dubr";
 
 /**
@@ -89,8 +92,7 @@ function PlayerRow({ player }: { player: MatchPlayer }) {
       {/* Only the account holder has a photo. Reusing the one avatar asset for
           everybody made every player on court the same person. */}
       {player.me ? (
-        /* eslint-disable-next-line @next/next/no-img-element */
-        <img src="/avatar.jpg" alt="" className="avatar avatar--sm" />
+        <Avatar className="avatar avatar--sm" />
       ) : (
         <span className="avatar-initials">{initials(player.name)}</span>
       )}

@@ -1,36 +1,69 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import { Trend } from "@/components/trend-chart";
-import { ChevronIcon, PinIcon, TrophyIcon } from "@/components/icons";
+import { ProfileEditor } from "@/components/profile-editor";
+import { useProfile } from "@/components/profile-store";
+import { ChevronIcon, PinIcon, TrophyIcon, PencilIcon } from "@/components/icons";
 import { ME, TREND, DISCIPLINES, fmt, levelFor, fmtDelta } from "@/lib/dubr";
 
 const MENU = [
   { label: "Rating history", sub: "Every match, every delta", href: "/log" },
   { label: "How DUBR works", sub: "What moves your number, and why", href: "#" },
   { label: "Clubs", sub: "Kotofit LIC", href: "#" },
-  { label: "Settings", sub: "Name, disciplines, availability", href: "#" },
 ];
 
 export default function Profile() {
+  const { profile } = useProfile();
+  const [editing, setEditing] = useState(false);
+
   const level = levelFor(ME.singles!);
   const change = TREND[TREND.length - 1] - TREND[0];
+
+  /* The editor REPLACES the header rather than appearing under it. Two copies of
+     your name on screen — one live, one being typed into — invites you to edit
+     the wrong one. */
+  if (editing) {
+    return (
+      <div className="stack">
+        <ProfileEditor onDone={() => setEditing(false)} />
+      </div>
+    );
+  }
 
   return (
     <div className="stack">
       <header className="card profile rise">
         <div className="profile__id">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={profile.avatar} alt="" className="avatar avatar--lg" />
+
           <div style={{ minWidth: 0 }}>
-            <h1 className="profile__name display">{ME.name}</h1>
+            <h1 className="profile__name display">{profile.name}</h1>
             <div className="profile__meta">
               <PinIcon />
               <span>
-                {ME.location} · {ME.club}
+                {profile.location} · {profile.club}
               </span>
+              <span className="text-faint">·</span>
+              <span>{profile.hand}-handed</span>
             </div>
+            {profile.availability.length > 0 && (
+              <div className="profile__meta">
+                <span className="text-faint">Free to play</span>
+                <span>{profile.availability.join(" · ")}</span>
+              </div>
+            )}
           </div>
         </div>
 
         <div className="profile__social">
           <span className="session__spots">{level.name}</span>
+          <button className="btn btn--ghost btn--sm" onClick={() => setEditing(true)}>
+            <PencilIcon />
+            Edit profile
+          </button>
         </div>
       </header>
 

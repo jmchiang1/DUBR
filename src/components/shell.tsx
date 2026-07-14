@@ -12,6 +12,7 @@ import {
   SearchIcon,
 } from "./icons";
 import { useMessages } from "./messages-store";
+import { useProfile } from "./profile-store";
 
 /**
  * The app shell. Desktop-first: a persistent left rail that collapses to a
@@ -49,9 +50,13 @@ export function Wordmark({ className = "" }: { className?: string }) {
   return <span className={`display ${className}`}>DUBR</span>;
 }
 
+/** Reads the profile store, so changing your photo on /profile changes it in the
+    rail and on every match card at the same moment. An avatar that only updates
+    on the page you edited it is a bug you notice immediately. */
 export function Avatar({ className = "avatar" }: { className?: string }) {
+  const { profile } = useProfile();
   /* eslint-disable-next-line @next/next/no-img-element */
-  return <img src="/avatar.jpg" alt="Jonathan Chiang" className={className} />;
+  return <img src={profile.avatar} alt={profile.name} className={className} />;
 }
 
 export function Shell({ children }: { children: React.ReactNode }) {

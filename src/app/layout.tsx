@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Shell } from "@/components/shell";
 import { MessagesProvider } from "@/components/messages-store";
+import { ProfileProvider } from "@/components/profile-store";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
@@ -22,9 +23,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {/* The inbox is above the Shell because the rail's unread badge and the
             /messages page are two views of one state. */}
-        <MessagesProvider>
-          <Shell>{children}</Shell>
-        </MessagesProvider>
+        {/* The profile is above the Shell for the same reason the inbox is: the
+            rail's avatar and the /profile editor are two views of one state. */}
+        <ProfileProvider>
+          <MessagesProvider>
+            <Shell>{children}</Shell>
+          </MessagesProvider>
+        </ProfileProvider>
       </body>
     </html>
   );

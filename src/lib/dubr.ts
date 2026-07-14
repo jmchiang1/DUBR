@@ -60,10 +60,34 @@ export const DISCIPLINES: { id: Discipline; label: string }[] = [
   { id: "mixed", label: "Mixed" },
 ];
 
+/** The days a player is usually free. Shared by the roster and by your own
+    profile, because "find me a game" has to read the same field on both sides. */
+export const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
+export type Day = (typeof DAYS)[number];
+
+/**
+ * Two values, because a filter needs two: the roster is either men or women, and
+ * the person searching is looking for either, or for anybody. Modelled as a
+ * closed union rather than a free string so "Anybody" cannot be a THIRD gender —
+ * it is the absence of a filter, and it lives in the filter, not in the player.
+ */
+export type Gender = "man" | "woman";
+
+/** Which formats a player actually turns up for. Not derivable from their
+    ratings: an unrated player has no ratings at all and still plays doubles. */
+export type Format = "singles" | "doubles";
+
 export type Player = {
   id: string;
   name: string;
   initials: string;
+  gender: Gender;
+  age: number;
+  /** Miles from you. Precomputed rather than derived from a lat/lng we do not
+      have — when there is a real geocoder this becomes a distance query. */
+  distance: number;
+  plays: Format[];
+  days: Day[];
   /** null = provisional / not yet rated. */
   singles: number | null;
   doubles: number | null;
@@ -120,6 +144,11 @@ export const ME: Player = {
   id: "me",
   name: "Jonathan Chiang",
   initials: "JC",
+  gender: "man",
+  age: 31,
+  distance: 0,
+  plays: ["singles", "doubles"],
+  days: ["Tue", "Thu", "Sat"],
   singles: 5.302,
   doubles: 5.417,
   mixed: null,
@@ -135,6 +164,11 @@ export const PLAYERS: Player[] = [
     id: "p1",
     name: "Mecream Osathanugrah",
     initials: "MO",
+    gender: "man",
+    age: 34,
+    distance: 6.2,
+    plays: ["singles", "doubles"],
+    days: ["Wed", "Sat", "Sun"],
     singles: 6.109,
     doubles: 6.241,
     mixed: 5.88,
@@ -148,6 +182,11 @@ export const PLAYERS: Player[] = [
     id: "p2",
     name: "Kevin Cheng",
     initials: "KC",
+    gender: "man",
+    age: 29,
+    distance: 11.4,
+    plays: ["singles"],
+    days: ["Thu", "Sun"],
     singles: 5.932,
     doubles: 6.014,
     mixed: null,
@@ -161,6 +200,11 @@ export const PLAYERS: Player[] = [
     id: "p3",
     name: "Brian Law",
     initials: "BL",
+    gender: "man",
+    age: 41,
+    distance: 1.8,
+    plays: ["singles", "doubles"],
+    days: ["Tue", "Sun"],
     singles: 5.826,
     doubles: 5.611,
     mixed: 5.44,
@@ -174,6 +218,11 @@ export const PLAYERS: Player[] = [
     id: "p4",
     name: "Shuang Wei",
     initials: "SW",
+    gender: "woman",
+    age: 26,
+    distance: 6.9,
+    plays: ["doubles"],
+    days: ["Mon", "Wed", "Fri"],
     singles: 5.604,
     doubles: 5.72,
     mixed: null,
@@ -187,6 +236,11 @@ export const PLAYERS: Player[] = [
     id: "p5",
     name: "Jun Jie Zhang",
     initials: "JZ",
+    gender: "man",
+    age: 19,
+    distance: 3.1,
+    plays: ["singles", "doubles"],
+    days: ["Sat", "Sun"],
     singles: 5.488,
     doubles: 5.203,
     mixed: 5.11,
@@ -200,6 +254,11 @@ export const PLAYERS: Player[] = [
     id: "me",
     name: "Jonathan Chiang",
     initials: "JC",
+    gender: "man",
+    age: 31,
+    distance: 0,
+    plays: ["singles", "doubles"],
+    days: ["Tue", "Thu", "Sat"],
     singles: 5.302,
     doubles: 5.417,
     mixed: null,
@@ -213,6 +272,11 @@ export const PLAYERS: Player[] = [
     id: "p6",
     name: "Sarah Tanaka",
     initials: "ST",
+    gender: "woman",
+    age: 33,
+    distance: 12,
+    plays: ["doubles"],
+    days: ["Tue", "Thu", "Sat"],
     singles: 5.144,
     doubles: 5.39,
     mixed: 5.5,
@@ -226,6 +290,11 @@ export const PLAYERS: Player[] = [
     id: "p7",
     name: "Owen Zhang",
     initials: "OZ",
+    gender: "man",
+    age: 22,
+    distance: 7.4,
+    plays: ["singles", "doubles"],
+    days: ["Mon", "Thu"],
     singles: 4.977,
     doubles: 5.042,
     mixed: null,
@@ -239,6 +308,11 @@ export const PLAYERS: Player[] = [
     id: "p8",
     name: "Amal Shaj",
     initials: "AS",
+    gender: "man",
+    age: 47,
+    distance: 2.3,
+    plays: ["doubles"],
+    days: ["Wed", "Sat"],
     singles: 4.61,
     doubles: 4.803,
     mixed: 4.72,
@@ -252,6 +326,11 @@ export const PLAYERS: Player[] = [
     id: "p9",
     name: "Benjamin Chen",
     initials: "BC",
+    gender: "man",
+    age: 17,
+    distance: 4.8,
+    plays: ["singles"],
+    days: ["Sat", "Sun"],
     singles: null,
     doubles: null,
     mixed: null,
@@ -264,6 +343,11 @@ export const PLAYERS: Player[] = [
     id: "p10",
     name: "Chun Kit Liu",
     initials: "CL",
+    gender: "woman",
+    age: 58,
+    distance: 8.6,
+    plays: ["doubles"],
+    days: ["Mon", "Fri"],
     singles: null,
     doubles: null,
     mixed: null,
@@ -559,6 +643,102 @@ export function axisTicks(points: RatingPoint[], range: Range): { index: number;
   });
 }
 
+/* ── The player filter ────────────────────────────────────────────────────
+   The directory's job is to answer ONE question — "who can I get a game with"
+   — and that question has five or six clauses, not one. It lives here rather
+   than in the page because it is a rule about players, not about a screen.  */
+
+export const DISTANCE_MAX = 100;
+/** The rating scale runs 2–8, so the filter does too. */
+export const [RATING_FLOOR, RATING_CEIL] = [RATING_MIN, RATING_MAX];
+/** The ends are open buckets: 18 means "under 19", 80 means "80 and up". */
+export const AGE_FLOOR = 18;
+export const AGE_CEIL = 80;
+
+export type PlayerFilters = {
+  /** Free-text name search. */
+  q: string;
+  /** Miles. 0 = no limit, which is the DEFAULT — a distance filter you did not
+      ask for silently hiding half the club is the worst kind of default. */
+  distance: number;
+  gender: Gender | "any";
+  /** Both, normally. Empty means nobody matches, and the UI says so rather than
+      quietly showing everyone — an empty selection is a real, if useless, query. */
+  formats: Format[];
+  rating: [number, number];
+  age: [number, number];
+  /** Days you want them free. Empty = any day. */
+  days: Day[];
+  /**
+   * Unrated players have NO rating, so a rating range EXCLUDES them by
+   * construction — `null` is not between 2 and 8. That exclusion has to be a
+   * switch you can see, not a side effect of touching a slider: this app's whole
+   * position is that NR is an honest state, and a directory that disappears every
+   * newcomer the moment you narrow the rating is a directory that lies about who
+   * is at the club.
+   */
+  includeUnrated: boolean;
+};
+
+export const DEFAULT_FILTERS: PlayerFilters = {
+  q: "",
+  distance: 0,
+  gender: "any",
+  formats: ["singles", "doubles"],
+  rating: [RATING_FLOOR, RATING_CEIL],
+  age: [AGE_FLOOR, AGE_CEIL],
+  days: [],
+  includeUnrated: true,
+};
+
+/** The rating that the selected formats are asking about. A doubles-only search
+    should be judged on the doubles rating, not on a singles rating the player may
+    barely have earned. */
+function ratingsFor(p: Player, formats: Format[]): (number | null)[] {
+  return formats.map((f) => p[f]);
+}
+
+export function filterRoster(f: PlayerFilters, roster: Player[] = ROSTER): Player[] {
+  const term = f.q.trim().toLowerCase();
+
+  return roster.filter((p) => {
+    if (p.id === "me") return false;
+    if (term && !p.name.toLowerCase().includes(term)) return false;
+    if (f.distance > 0 && p.distance > f.distance) return false;
+    if (f.gender !== "any" && p.gender !== f.gender) return false;
+    if (!f.formats.some((x) => p.plays.includes(x))) return false;
+
+    /* Open buckets at both ends: at the floor there is no lower bound at all, so
+       the 17-year-olds are in; at the ceiling there is no upper bound. */
+    const [ageLo, ageHi] = f.age;
+    if (ageLo > AGE_FLOOR && p.age < ageLo) return false;
+    if (ageHi < AGE_CEIL && p.age > ageHi) return false;
+
+    if (f.days.length && !f.days.some((d) => p.days.includes(d))) return false;
+
+    const ratings = ratingsFor(p, f.formats);
+    const rated = ratings.filter((r): r is number => r !== null);
+    if (!rated.length) return f.includeUnrated;
+
+    const [lo, hi] = f.rating;
+    return rated.some((r) => r >= lo && r <= hi);
+  });
+}
+
+/** How many clauses are narrowing the result, for the "Filters · 3" badge and to
+    decide whether "Reset" has anything to do. */
+export function activeFilterCount(f: PlayerFilters): number {
+  let n = 0;
+  if (f.distance > 0) n++;
+  if (f.gender !== "any") n++;
+  if (f.formats.length !== 2) n++;
+  if (f.rating[0] > RATING_FLOOR || f.rating[1] < RATING_CEIL) n++;
+  if (f.age[0] > AGE_FLOOR || f.age[1] < AGE_CEIL) n++;
+  if (f.days.length) n++;
+  if (!f.includeUnrated) n++;
+  return n;
+}
+
 export function leaderboard(discipline: Discipline): Player[] {
   return [...ROSTER]
     .filter((p) => p[discipline] !== null)
@@ -633,6 +813,8 @@ const LAST = [
 
 const CLUBS = ["Kotofit LIC", "Kotofit Flushing", "Kotofit JC"];
 const LOCATIONS = ["Long Island City, NY", "Flushing, NY", "Jersey City, NJ"];
+/** Rough miles from the account holder, per club. Parallel to CLUBS. */
+const CLUB_MILES = [1.5, 6, 11];
 
 function makeRoster(count: number): Player[] {
   const out: Player[] = [];
@@ -682,10 +864,34 @@ function makeRoster(count: number): Player[] {
     const base = 3.4 + rand() * 2.5;
     const club = (i * 3) % CLUBS.length;
 
+    /* Distance is anchored to the CLUB, not rolled independently: everybody at
+       Kotofit LIC is genuinely near you and everybody at Jersey City genuinely is
+       not, so filtering by distance and filtering by club agree with each other. */
+    const distance = Number((CLUB_MILES[club] + rand() * 5).toFixed(1));
+
+    /* Ages skew young, with a real tail. A flat 18–80 roll would put as many
+       70-year-olds on the board as 25-year-olds, and the age filter would then
+       be testing against a population no club has ever had. */
+    const age = Math.round(18 + Math.pow(rand(), 1.9) * 56);
+
+    /* Everyone plays doubles — it is the format a club night is made of. Singles
+       is the smaller commitment to make, so it is the one that varies. */
+    const plays: Format[] = rand() < 0.55 ? ["singles", "doubles"] : ["doubles"];
+
+    /* Two or three nights a week, contiguous-ish, not a random scatter. */
+    const start = Math.floor(rand() * DAYS.length);
+    const nights = 2 + Math.floor(rand() * 2);
+    const days = Array.from({ length: nights }, (_, k) => DAYS[(start + k * 2) % DAYS.length]);
+
     out.push({
       id: `r${i}`,
       name,
       initials: (first[0] + last[0]).toUpperCase(),
+      gender: rand() < 0.58 ? "man" : "woman",
+      age,
+      distance,
+      plays,
+      days: [...new Set(days)],
       singles: unrated ? null : Number(base.toFixed(3)),
       doubles: unrated ? null : Number((base + (rand() - 0.45) * 0.4).toFixed(3)),
       mixed: unrated || rand() < 0.35 ? null : Number((base + (rand() - 0.5) * 0.5).toFixed(3)),

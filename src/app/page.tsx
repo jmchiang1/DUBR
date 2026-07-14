@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Trend } from "@/components/trend-chart";
 import { MatchCard } from "@/components/match-card";
+import { useProfile } from "@/components/profile-store";
 import { ArrowUpIcon, ArrowDownIcon, ChevronIcon, PinIcon, PlusIcon } from "@/components/icons";
 import {
   ME,
@@ -23,6 +24,7 @@ import {
 } from "@/lib/dubr";
 
 export default function Home() {
+  const { profile } = useProfile();
   const [disc, setDisc] = useState<Discipline>("singles");
   const [range, setRange] = useState<Range>("year");
 
@@ -46,10 +48,11 @@ export default function Home() {
       <header className="card profile rise">
         <div className="profile__id">
           <div style={{ minWidth: 0 }}>
-            <h1 className="profile__name display">{ME.name}</h1>
+            {/* From the profile store, so an edit on /profile shows here too. */}
+            <h1 className="profile__name display">{profile.name}</h1>
             <div className="profile__meta">
               <PinIcon />
-              <span>{ME.location}</span>
+              <span>{profile.location}</span>
               <span className="text-faint">·</span>
               <span>ID X22V02</span>
             </div>
