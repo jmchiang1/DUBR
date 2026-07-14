@@ -6,7 +6,8 @@ import { ProfileEditor } from "@/components/profile-editor";
 import { Modal } from "@/components/modal";
 import { useProfile } from "@/components/profile-store";
 import { PendingCard } from "@/components/pending-card";
-import { ChevronIcon, PinIcon, PencilIcon, CopyIcon } from "@/components/icons";
+import { ChevronIcon, PencilIcon, CopyIcon } from "@/components/icons";
+import { IdentityMeta } from "@/components/identity-meta";
 import {
   ME,
   PENDING,
@@ -85,10 +86,9 @@ export default function Profile() {
 
           <div style={{ minWidth: 0 }}>
             <h1 className="profile__name display">{profile.name}</h1>
-            <div className="profile__meta">
-              <PinIcon />
-              <span>{profile.location}</span>
-            </div>
+            {/* The same component /players/[id] uses, so your own header and your
+                public page cannot drift apart. */}
+            <IdentityMeta player={ME} />
           </div>
         </div>
 
@@ -101,7 +101,7 @@ export default function Profile() {
             <CopyIcon />
           </button>
 
-          <button className="btn btn--ghost btn--sm" onClick={() => setEditing(true)}>
+          <button className="btn btn--ghost btn--sm text-bone" onClick={() => setEditing(true)}>
             <PencilIcon />
             Edit profile
           </button>
@@ -156,12 +156,6 @@ export default function Profile() {
                     <span className={`conf__value figure ${rated ? "" : "text-faint"}`}>
                       {fmt(v)}
                     </span>
-                  </div>
-
-                  <div className="conf__sub">
-                    {rated
-                      ? `${pct}% reliable${pct >= 80 ? " · tournament-ready" : ""}`
-                      : `Unrated · ${need} more ${need === 1 ? "match" : "matches"} to place you`}
                   </div>
                 </li>
               );

@@ -15,27 +15,11 @@ export const RATING_MAX = 8;
 /** Matches required before a rating stops being provisional. */
 export const RELIABILITY_THRESHOLD = 5;
 
-export type Level = {
-  name: string;
-  floor: number;
-};
-
-export const LEVELS: Level[] = [
-  { name: "First Timer", floor: 2.0 },
-  { name: "Beginner", floor: 3.0 },
-  { name: "Intermediate", floor: 4.0 },
-  { name: "Advanced", floor: 5.0 },
-  { name: "Elite", floor: 6.0 },
-  { name: "Professional", floor: 7.0 },
-];
-
-export function levelFor(rating: number): Level {
-  return [...LEVELS].reverse().find((l) => rating >= l.floor) ?? LEVELS[0];
-}
-
-export function nextLevel(rating: number): Level | null {
-  return LEVELS.find((l) => l.floor > rating) ?? null;
-}
+/* No LEVELS ladder. A named tier ("Advanced", "Elite") is a SECOND rating sitting
+   beside the real one, coarser and louder — and the two disagree constantly: 4.999
+   and 5.001 are the same player and were being labelled a division apart. The
+   number is the rating. It is already legible, and it does not round people into
+   a bucket they then argue about. */
 
 /** Position on the 2–8 scale, 0..1. Used by the rating rail. */
 export function scalePos(rating: number): number {
@@ -72,6 +56,30 @@ export type Day = (typeof DAYS)[number];
  * it is the absence of a filter, and it lives in the filter, not in the player.
  */
 export type Gender = "man" | "woman";
+
+export const GENDER_LABEL: Record<Gender, string> = { man: "Man", woman: "Woman" };
+
+/**
+ * Your birthday, ISO. The roster stores an AGE because it is mock data frozen at
+ * a moment; your OWN profile stores the birthday, because an age is a fact that
+ * expires and a stored one is wrong within a year of being typed.
+ *
+ * This is the seed for that field, and it is the birthday that produces ME.age.
+ */
+export const ME_BIRTHDAY = "1995-03-08";
+
+/** Age from an ISO birthday, as of today. Counts whether the birthday has landed
+    yet this year — a naive year subtraction is wrong for half the calendar. */
+export function ageFrom(birthday: string, today: Date = new Date()): number | null {
+  const born = new Date(`${birthday}T00:00:00`);
+  if (Number.isNaN(born.getTime())) return null;
+
+  let age = today.getFullYear() - born.getFullYear();
+  const month = today.getMonth() - born.getMonth();
+  if (month < 0 || (month === 0 && today.getDate() < born.getDate())) age--;
+
+  return age >= 0 && age < 130 ? age : null;
+}
 
 /** Which formats a player actually turns up for. Not derivable from their
     ratings: an unrated player has no ratings at all and still plays doubles. */
@@ -151,8 +159,8 @@ export const ME: Player = {
   singles: 5.302,
   doubles: 5.417,
   mixed: null,
-  matches: 14,
-  wins: 9,
+  matches: 109,
+  wins: 72,
   reliability: 0.72,
   location: "Queens County, NY",
 };
@@ -243,23 +251,16 @@ export const PLAYERS: Player[] = [
     reliability: 0.64,
     location: "Queens County, NY",
   },
-  {
-    id: "me",
-    name: "Jonathan Chiang",
-    initials: "JC",
-    gender: "man",
-    age: 31,
-    distance: 0,
-    plays: ["singles", "doubles"],
-    days: ["Tue", "Thu", "Sat"],
-    singles: 5.302,
-    doubles: 5.417,
-    mixed: null,
-    matches: 14,
-    wins: 9,
-    reliability: 0.72,
-    location: "Queens County, NY",
-  },
+  /**
+   * You, BY REFERENCE — not a second copy.
+   *
+   * There used to be a full literal here duplicating ME, and the two had already
+   * drifted: ME said 109 matches and 72 wins, this said 14 and 9. So the board, the
+   * directory and your public page reported a different record and a different
+   * follower count from home, depending only on which of the two objects the page
+   * happened to import. One person cannot be two rows.
+   */
+  ME,
   {
     id: "p6",
     name: "Sarah Tanaka",
@@ -1001,6 +1002,30 @@ export const LOCATION_OPTIONS: string[] = [...new Set(ROSTER.map((p) => p.locati
 
 export function getPlayer(id: string): Player | undefined {
   return ROSTER.find((p) => p.id === id);
+}
+
+/**
+ * A player's follower / following counts.
+ *
+ * DERIVED from their id and their record rather than stored on the player, for
+ * the same reason the location options are derived: a hand-written number on 80
+ * players is 80 chances to drift, and the generated half of the roster has no
+ * hand to write it. It is deterministic, so the server render and the client
+ * render agree — a count that changes on hydration would be a visible flicker.
+ *
+ * Followers scale with how much a player has actually played, because on a real
+ * board they do: the people with 40 matches are the people other people watch.
+ */
+export function socialFor(player: Player): { followers: number; following: number } {
+  let h = 2166136261;
+  for (let i = 0; i < player.id.length; i++) {
+    h = Math.imul(h ^ player.id.charCodeAt(i), 16777619) >>> 0;
+  }
+
+  return {
+    followers: 4 + (h % 40) + player.matches * 2,
+    following: 6 + ((h >>> 8) % 55),
+  };
 }
 
 export function rankOf(id: string, discipline: Discipline): number | null {

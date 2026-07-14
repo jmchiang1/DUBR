@@ -148,15 +148,6 @@
      cuts the chin off. */
   object-fit: cover;
   object-position: 50% 22%;
-  box-shadow: 0 0 0 2px var(--aqua);
-}
-
-/* No aqua ring on the profile header. The ring is an IDENTITY marker — it picks
-   your face out of a list of other people's (the sidebar, a match card). On your
-   own profile there is nobody to be picked out from, so it is decoration, and
-   aqua is not allowed to be decoration. */
-.profile .avatar {
-  box-shadow: none;
 }
 
 .avatar--lg {
@@ -288,11 +279,14 @@
   min-width: 0;
 }
 
+/* A name WRAPS rather than truncates. An ellipsis is the right answer in a list
+   row, where every row must be the same height and you can open the one you want;
+   it is the wrong answer on the page that exists to tell you who somebody is.
+   "Mecream Osathanugrah" came out as "MECRE…" on his own profile. Two lines is a
+   cost worth paying to never do that again. */
 .profile__name {
   font-size: 20px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .profile__meta {
@@ -309,6 +303,40 @@
   width: 14px;
   height: 14px;
   flex-shrink: 0;
+}
+
+/* ── The action row ───────────────────────────────────────────────────────
+   Follow / Message / Log a match, on the canvas directly under the header. They
+   used to live INSIDE the header, which had to be an identity, a stat block and a
+   toolbar all at once — and the toolbar won: it ate the name.
+
+   On the canvas, not on a card, because these are not information. They are the
+   verbs, and they read as verbs when nothing frames them. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
+}
+
+.actions__btn {
+  /* Sized to their own labels on desktop… */
+  flex: 0 0 auto;
+}
+
+@media (max-width: 639px) {
+  /* …and equal thumb-sized targets on a phone, where "Log a match with Mecream"
+     would otherwise be the only button anybody could hit. */
+  .actions__btn {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+}
+
+/* Following is a STATE, not an offer. Once it is on, the button stops advertising
+   itself — it is the one control here you have already used. */
+.actions__btn.is-following {
+  border: 1px solid var(--aqua);
+  color: var(--aqua);
 }
 
 .profile__social {
@@ -430,10 +458,6 @@
   margin-top: var(--gap-sm);
   font-size: 13px;
   color: var(--mute);
-}
-
-.rating__level strong {
-  color: var(--bone);
 }
 
 .rating__empty {
@@ -1252,18 +1276,6 @@
   flex-shrink: 0;
 }
 
-/* A player's level, worn as a badge. (Was .session__spots, which was a lie the
-   moment the profile started using it.) */
-.level-pill {
-  flex-shrink: 0;
-  padding: 4px var(--gap-sm);
-  border-radius: var(--radius-sm);
-  font-size: 11px;
-  font-weight: 500;
-  background: rgba(0, 229, 192, 0.15);
-  color: var(--aqua);
-}
-
 /* Used by the profile's Mini stat. */
 .fact__value {
   margin-top: 6px;
@@ -1429,6 +1441,74 @@
   max-width: 560px;
 }
 
+/* ── The photo control ────────────────────────────────────────────────────
+   The avatar IS the button. Centred, large, with the pencil riding its lower-right
+   edge — the gesture everybody already knows. A separate "Change photo" button
+   beside it was a second object doing the first object's job. */
+
+.photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-sm);
+}
+
+.photo__btn {
+  position: relative;
+  display: block;
+  border-radius: var(--radius-pill);
+  line-height: 0;
+}
+
+.photo__btn:focus-visible {
+  outline: 2px solid var(--aqua);
+  outline-offset: 3px;
+}
+
+.photo__img {
+  width: 96px;
+  height: 96px;
+  border-radius: var(--radius-pill);
+  object-fit: cover;
+  /* Same crop as every other avatar: the source photo is 16:9 with the face above
+     centre, so a plain centre crop takes the chin off. */
+  object-position: 50% 22%;
+  transition: filter 0.15s;
+}
+
+.photo__btn:hover .photo__img {
+  filter: brightness(0.82);
+}
+
+/* The badge rides the circle's edge at roughly 4-o'clock, where the photo has the
+   most room and the face has the least. Frosted rather than ringed: a solid chip
+   in a hard outline reads as a second object stuck on top of the photo, where a
+   translucent one reads as part of the same surface. */
+.photo__badge {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: var(--bone);
+  transition: transform 0.12s;
+}
+
+.photo__btn:hover .photo__badge {
+  transform: scale(1.06);
+}
+
+.photo__badge svg {
+  width: 15px;
+  height: 15px;
+}
+
 .editor__photo {
   display: flex;
   align-items: center;
@@ -1452,6 +1532,57 @@
   display: flex;
   flex-direction: column;
   gap: var(--gap-sm);
+}
+
+/* A label with something to say on its right — the derived age, or the fact that
+   a field is private. */
+.field-row__legend {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+}
+
+/* The app AGREEING with what you typed. Not a hint and not an error — an echo. */
+.field-row__note {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--mute);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Said in the label, where it cannot be missed, not in fine print underneath —
+   by the time a player discovers a number was public, it is already public. */
+.field-row__private {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--elevated);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--mute);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.field-row__private svg {
+  width: 11px;
+  height: 11px;
+}
+
+/* The native date picker paints its own indicator in the UA's colours, which on a
+   dark field is a black glyph on navy. Invert it. */
+.input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.55;
+  cursor: pointer;
+}
+
+.input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
 }
 
 .input {
@@ -1506,27 +1637,11 @@
   color: var(--faint);
 }
 
-/* Two mutually exclusive options — one control, not two checkboxes. */
-.segmented {
-  display: inline-flex;
-  align-self: flex-start;
-  overflow: hidden;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-}
-
-.segmented__btn {
-  padding: 8px var(--gap-md);
-  font-size: 13px;
-  color: var(--mute);
-  transition: background 0.15s, color 0.15s;
-}
-
-.segmented__btn.is-active {
-  background: var(--aqua);
-  color: var(--on-aqua);
-  font-weight: 600;
-}
+/* The segmented control is defined ONCE, further down with the filter panel.
+   There used to be a second copy right here, and the two of them were fighting:
+   this one's `align-self: flex-start` was not overridden by the other, so the
+   gender picker in the editor collapsed to the width of its own labels while the
+   identical control in the filter panel went full width. Same class, two looks. */
 
 /* Days are a multi-select, so they are toggles rather than a segmented control:
    a player is free on several days, not on exactly one. */
@@ -1648,10 +1763,18 @@
   max-height: min(760px, calc(100dvh - var(--gap-xl)));
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  /* Opaque, unlike a .card. A card samples the gradient BEHIND it, which is the
-     page; a modal floats over a blurred backdrop, and a translucent panel there
-     just smears whatever it happens to be covering. */
-  background: #1b2a6b;
+  /* THE CARD COLOUR, made opaque — not a hex somebody picked.
+     A card is --surface (translucent white) sampling the canvas beneath it, and
+     the canvas is --canvas-sweep over --ink. A modal cannot sample the canvas,
+     because what is behind it is the dimmed backdrop and it would smear whatever
+     it happened to be covering. So the three layers a card gets for free are
+     stacked explicitly here, bottom-up: ink, sweep, surface. The result is a card
+     that renders the same colour anywhere on screen — and if a token moves, this
+     moves with it. */
+  background:
+    linear-gradient(var(--surface), var(--surface)),
+    var(--canvas-sweep),
+    var(--ink);
   box-shadow: 0 24px 60px rgba(0, 8, 44, 0.5);
   animation: modal-in 0.18s ease-out;
 }
@@ -2812,12 +2935,6 @@
 
 .conf__value {
   font-size: 18px;
-}
-
-.conf__sub {
-  margin-top: 4px;
-  font-size: 11px;
-  color: var(--faint);
 }
 
 /* ── Registered events ────────────────────────────────────────────────────── */

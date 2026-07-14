@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Trend } from "@/components/trend-chart";
 import { MatchCard } from "@/components/match-card";
 import { useProfile } from "@/components/profile-store";
+import { PlayerSocial } from "@/components/player-social";
 import { ArrowUpIcon, ArrowDownIcon, ChevronIcon, PinIcon, PlusIcon } from "@/components/icons";
 import {
   ME,
@@ -14,12 +15,11 @@ import {
   RANGES,
   axisTicks,
   historyFor,
+  socialFor,
   type Discipline,
   type Range,
   fmt,
   fmtDelta,
-  levelFor,
-  nextLevel,
   RELIABILITY_THRESHOLD,
 } from "@/lib/dubr";
 
@@ -38,8 +38,6 @@ export default function Home() {
 
   const rating = ME[disc];
   const rated = rating !== null;
-  const level = rated ? levelFor(rating) : null;
-  const next = rated ? nextLevel(rating) : null;
   const delta = TREND[TREND.length - 1] - TREND[TREND.length - 2];
 
   return (
@@ -59,9 +57,12 @@ export default function Home() {
           </div>
         </div>
 
+        {/* The same component, in the same corner, as every other profile header —
+            and reading the same numbers /players/me does. These used to be the
+            literals 25 and 6, which meant your own two pages quietly disagreed
+            about how many followers you have. */}
         <div className="profile__social">
-          <Social value="25" label="Following" />
-          <Social value="6" label="Followers" />
+          <PlayerSocial playerId={ME.id} {...socialFor(ME)} />
         </div>
       </header>
 
@@ -103,11 +104,6 @@ export default function Home() {
 
             {rated ? (
               <>
-                <div className="rating__level">
-                  <strong>{level!.name}</strong>
-                  {next && ` · ${(next.floor - rating).toFixed(3)} to ${next.name}`}
-                </div>
-
                 {/* The trajectory fills the remaining height, so this card and
                     the statistics card beside it end on the same line. The chart
                     draws its own month strip along the bottom; the range control
@@ -162,8 +158,8 @@ export default function Home() {
           </h2>
 
           <div className="stat-grid" style={{ marginTop: 24 }}>
-            <Stat label="Matches This Week" value="3" />
-            <Stat label="Matches This Month" value="2" />
+            <Stat label="Matches This Month" value="15" />
+            <Stat label="Matches All Time" value="109" />
             <Stat label="Wins" value={String(ME.wins)} />
             <Stat label="Losses" value={String(ME.matches - ME.wins)} />
             <Stat label="Avg Opponent" value="5.61" />
@@ -171,7 +167,7 @@ export default function Home() {
           </div>
 
           <div className="stat-grid stat-grid--divided">
-            <Stat label="Global Rank" value="31" sub="of 612 players" />
+            <Stat label="Global Rank" value="405,647" sub="of 1,623,893 players" />
             <Stat
               label="Record"
               value={`${ME.wins}–${ME.matches - ME.wins}`}
@@ -197,15 +193,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-    </div>
-  );
-}
-
-function Social({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="social">
-      <span className="social__value figure">{value}</span>
-      <span className="label">{label}</span>
     </div>
   );
 }

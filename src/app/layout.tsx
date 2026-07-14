@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { Shell } from "@/components/shell";
 import { MessagesProvider } from "@/components/messages-store";
 import { ProfileProvider } from "@/components/profile-store";
+import { FollowProvider } from "@/components/follow-store";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], display: "swap" });
@@ -25,10 +26,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             /messages page are two views of one state. */}
         {/* The profile is above the Shell for the same reason the inbox is: the
             rail's avatar and the /profile editor are two views of one state. */}
+        {/* Who you follow sits up here too: the count on a player's page and the
+            button beside it are two views of one state. */}
         <ProfileProvider>
-          <MessagesProvider>
-            <Shell>{children}</Shell>
-          </MessagesProvider>
+          <FollowProvider>
+            <MessagesProvider>
+              <Shell>{children}</Shell>
+            </MessagesProvider>
+          </FollowProvider>
         </ProfileProvider>
       </body>
     </html>

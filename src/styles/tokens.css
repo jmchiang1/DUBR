@@ -19,6 +19,11 @@
      and the same card at the bottom reads teal. Replacing these with the
      computed hex would flatten the whole design. */
   --surface: rgba(255, 255, 255, 0.25); /* card */
+  /* The card colour, FLATTENED: --surface over --canvas-sweep over --ink, resolved
+     to one opaque value. Needed where a stack of translucent layers is impossible
+     — a box-shadow ring, a border — and used by the modal, which floats over a
+     dimmed backdrop it must not sample. Keep in step with the three above. */
+  --surface-opaque: #232f70;
   --surface-hover: rgba(255, 255, 255, 0.3);
   --elevated: rgba(255, 255, 255, 0.34); /* active tab, inset, avatar fallback */
   --line: rgba(255, 255, 255, 0.16); /* hairline */

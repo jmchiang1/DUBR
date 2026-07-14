@@ -2,8 +2,20 @@
 
 import { useRef, useState } from "react";
 import { useProfile, type Profile } from "./profile-store";
-import { LockIcon, PinIcon } from "./icons";
-import { DISCIPLINES, ME, fmt, rankOf } from "@/lib/dubr";
+import { LockIcon, PencilIcon, PinIcon } from "./icons";
+import {
+  DISCIPLINES,
+  GENDER_LABEL,
+  ME,
+  ageFrom,
+  fmt,
+  rankOf,
+  type Gender,
+} from "@/lib/dubr";
+
+/** Caps the date picker: you cannot have been born tomorrow. Computed once at
+    module load — a birthday input does not need to notice midnight. */
+const TODAY = new Date().toISOString().slice(0, 10);
 
 /**
  * The profile editor.
@@ -47,48 +59,84 @@ export function ProfileEditor({ onDone }: { onDone: () => void }) {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+
     const name = draft.name.trim();
     if (!name) {
       setError("A name is required — other players find you by it.");
       return;
     }
-    save({ ...draft, name, location: draft.location.trim() });
+
+    /* A birthday is optional, but a birthday that is WRONG is worse than none:
+       it silently mis-sorts you into an age bracket other players filter on. */
+    const birthday = draft.birthday.trim();
+    if (birthday) {
+      const age = ageFrom(birthday);
+      if (age === null || age < 5) {
+        setError("That birthday is not a real date.");
+        return;
+      }
+    }
+
+    save({
+      ...draft,
+      name,
+      location: draft.location.trim(),
+      birthday,
+      phone: draft.phone.trim(),
+    });
     onDone();
   };
+
+  const age = draft.birthday ? ageFrom(draft.birthday) : null;
 
   return (
     /* No card, no heading, no `.rise` — this renders INSIDE a modal now, which
        supplies its own surface, title and entrance. */
     <form className="editor" onSubmit={submit}>
-      {/* Photo */}
-      <div className="editor__photo">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={draft.avatar} alt="" className="avatar avatar--lg" />
-        <div>
-          <button type="button" className="btn btn--ghost btn--sm" onClick={() => fileRef.current?.click()}>
-            Change photo
+      {/* ── PHOTO ────────────────────────────────────────────────────────
+          The photo IS the control. It is centred and it is the biggest thing in
+          the dialog, with the pencil riding its edge — which is the gesture people
+          already know from every account screen they have ever used. A "Change
+          photo" button beside it was a second object doing the first object's job,
+          and it made the avatar look like decoration rather than something you can
+          press. The whole thing is one button, so a click anywhere on the face
+          opens the picker. */}
+      <div className="photo">
+        <button
+          type="button"
+          className="photo__btn"
+          onClick={() => fileRef.current?.click()}
+          aria-label="Change profile photo"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={draft.avatar} alt="" className="photo__img" />
+          <span className="photo__badge" aria-hidden="true">
+            <PencilIcon />
+          </span>
+        </button>
+
+        {/* Only offered once there is something to revert TO. */}
+        {draft.avatar !== "/avatar.jpg" && (
+          <button
+            type="button"
+            className="editor__clear"
+            onClick={() => set("avatar", "/avatar.jpg")}
+          >
+            Remove photo
           </button>
-          {draft.avatar !== "/avatar.jpg" && (
-            <button
-              type="button"
-              className="editor__clear"
-              onClick={() => set("avatar", "/avatar.jpg")}
-            >
-              Remove
-            </button>
-          )}
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="sr-only"
-            onChange={(e) => {
-              const f = e.target.files?.[0];
-              if (f) pickPhoto(f);
-              e.target.value = ""; // let the same file be picked twice
-            }}
-          />
-        </div>
+        )}
+
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) pickPhoto(f);
+            e.target.value = ""; // let the same file be picked twice
+          }}
+        />
       </div>
 
       <label className="field-row">
@@ -113,6 +161,65 @@ export function ProfileEditor({ onDone }: { onDone: () => void }) {
             maxLength={60}
           />
         </div>
+      </label>
+
+      {/* Birthday, not age. Age is derived and echoed back beside the field, so
+          you can see the app agreed with you — and it never goes stale, which a
+          typed-in age would within a year. */}
+      <label className="field-row">
+        <span className="label field-row__legend">
+          Birthday
+          {age !== null && <span className="field-row__note">{age} years old</span>}
+        </span>
+        <input
+          className="input"
+          type="date"
+          value={draft.birthday}
+          onChange={(e) => set("birthday", e.target.value)}
+          max={TODAY}
+        />
+      </label>
+
+      <div className="field-row">
+        <span className="label">Gender</span>
+        <div className="segmented" role="group" aria-label="Gender">
+          {(Object.keys(GENDER_LABEL) as Gender[]).map((g) => (
+            <button
+              key={g}
+              type="button"
+              onClick={() => set("gender", g)}
+              aria-pressed={draft.gender === g}
+              className={`segmented__btn ${draft.gender === g ? "is-active" : ""}`}
+            >
+              {GENDER_LABEL[g]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* PRIVATE, and it says so. A phone number on a screen full of public fields
+          will be assumed public unless the form says otherwise — and by the time a
+          player discovers otherwise, it is already on 72 strangers' screens. */}
+      <label className="field-row">
+        <span className="label field-row__legend">
+          Phone
+          <span className="field-row__private">
+            <LockIcon />
+            Private
+          </span>
+        </span>
+        <input
+          className="input"
+          type="tel"
+          value={draft.phone}
+          onChange={(e) => set("phone", e.target.value)}
+          placeholder="(555) 123-4567"
+          maxLength={24}
+        />
+        <p className="editor__hint">
+          Never shown on your public profile. Only a player you have agreed a match
+          with can see it.
+        </p>
       </label>
 
       {/* ── EARNED ───────────────────────────────────────────────────────

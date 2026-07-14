@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useMessages } from "@/components/messages-store";
 import { lastMessage, playerFor, type Thread } from "@/lib/messages";
-import { fmt, levelFor } from "@/lib/dubr";
+import { fmt } from "@/lib/dubr";
 import { ChevronIcon, MessageIcon, PinIcon, PlusIcon, SendIcon } from "@/components/icons";
 
 /**
@@ -152,9 +152,7 @@ function Conversation({
             an inbox at all. */}
         <div className="thread__rating">
           <div className="figure thread__figure">{fmt(other.singles)}</div>
-          <div className="label">
-            {other.singles === null ? "Unrated" : levelFor(other.singles).name}
-          </div>
+          <div className="label">{other.singles === null ? "Unrated" : "Singles"}</div>
         </div>
 
         <Link href="/log" className="btn btn--ghost thread__log">

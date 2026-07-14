@@ -89,6 +89,9 @@
   justify-content: space-between;
 }
 
+.text-bone {
+  color: var(--bone);
+}
 .text-mute {
   color: var(--mute);
 }

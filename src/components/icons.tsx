@@ -159,6 +159,25 @@ export const PencilIcon = (p: P) => (
   </S>
 );
 
+/* Follow, and its done state. A person with a plus becomes a person with a tick —
+   same figure, so the button reads as one thing in two states rather than two
+   different buttons swapping places. */
+export const FollowIcon = (p: P) => (
+  <S {...p}>
+    <path d="M10 11a3.6 3.6 0 1 0 0-7.2 3.6 3.6 0 0 0 0 7.2Z" />
+    <path d="M3.5 20v-1a4.5 4.5 0 0 1 4.5-4.5h4" />
+    <path d="M17.5 14v6M14.5 17h6" />
+  </S>
+);
+
+export const FollowingIcon = (p: P) => (
+  <S {...p}>
+    <path d="M10 11a3.6 3.6 0 1 0 0-7.2 3.6 3.6 0 0 0 0 7.2Z" />
+    <path d="M3.5 20v-1a4.5 4.5 0 0 1 4.5-4.5h4" />
+    <path d="m14.5 17.5 2.2 2.2 4.3-4.8" />
+  </S>
+);
+
 export const TrophyIcon = (p: P) => (
   <S {...p}>
     <path d="M7 4h10v5a5 5 0 0 1-10 0V4Z" />

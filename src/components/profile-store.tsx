@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { ME } from "@/lib/dubr";
+import { ME, ME_BIRTHDAY, type Gender } from "@/lib/dubr";
 
 /**
  * The player's own profile, shared by the rail, the home header, and /profile.
@@ -20,6 +20,19 @@ import { ME } from "@/lib/dubr";
 export type Profile = {
   name: string;
   location: string;
+  /**
+   * ISO YYYY-MM-DD. The BIRTHDAY is stored, never the age — an age is a fact that
+   * expires, and a stored one is wrong within a year of being typed. Age is
+   * derived from this wherever it is shown.
+   */
+  birthday: string;
+  gender: Gender;
+  /**
+   * PRIVATE. Never rendered on the public player page — it exists so an opponent
+   * you have already agreed a match with can reach you, which is a different thing
+   * from putting your number on a directory 72 strangers can scroll.
+   */
+  phone: string;
   /** A data URL when the user has picked their own photo, else the default. */
   avatar: string;
 };
@@ -27,6 +40,9 @@ export type Profile = {
 const DEFAULTS: Profile = {
   name: ME.name,
   location: ME.location,
+  birthday: ME_BIRTHDAY,
+  gender: ME.gender,
+  phone: "",
   avatar: "/avatar.jpg",
 };
 

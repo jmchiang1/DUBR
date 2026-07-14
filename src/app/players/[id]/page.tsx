@@ -2,7 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Trend } from "@/components/trend-chart";
 import { MatchCard } from "@/components/match-card";
-import { PinIcon, ChevronIcon, PlusIcon, MessageIcon } from "@/components/icons";
+import { ChevronIcon } from "@/components/icons";
+import { IdentityMeta } from "@/components/identity-meta";
+import { PlayerSocial } from "@/components/player-social";
+import { PlayerActions } from "@/components/player-actions";
 import {
   ROSTER,
   ME,
@@ -12,8 +15,8 @@ import {
   syntheticHistory,
   matchesFor,
   headToHead,
+  socialFor,
   fmt,
-  levelFor,
   RELIABILITY_THRESHOLD,
 } from "@/lib/dubr";
 
@@ -30,8 +33,8 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
   const isMe = player.id === "me";
   const rating = player.singles;
   const rated = rating !== null;
-  const level = rated ? levelFor(rating) : null;
   const rank = rankOf(player.id, "singles");
+  const { followers, following } = socialFor(player);
   const history = syntheticHistory(player, "singles");
   const matches = matchesFor(player);
   const h2h = isMe ? null : headToHead(player);
@@ -55,33 +58,25 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
 
           <div style={{ minWidth: 0 }}>
             <h1 className="profile__name display">{player.name}</h1>
-            {/* Location, and nothing else. Which facility somebody prefers to
-                book is a fact about a building, not about them. */}
-            <div className="profile__meta">
-              <PinIcon />
-              <span>{player.location}</span>
-              <span className="text-faint">·</span>
-              <span>{player.distance} mi away</span>
-            </div>
+            {/* No club: which facility somebody prefers to book is a fact about a
+                building, not about them. Age and gender ARE about them, and both
+                are things the directory already lets you filter on — a filter you
+                cannot then read off the profile is a filter you cannot trust. */}
+            <IdentityMeta player={player} distance />
           </div>
         </div>
 
+        {/* The same two numbers your own header carries, in the same place, and
+            NOTHING else. The card says who somebody is; what you do about them is
+            a separate thought, and it is on its own row below. */}
         <div className="profile__social">
-          {rated && <span className="level-pill">{level!.name}</span>}
-          {!isMe && (
-            <div className="row" style={{ gap: 8 }}>
-              <Link href="/messages" className="btn btn--ghost btn--sm">
-                <MessageIcon />
-                Message
-              </Link>
-              <Link href="/log" className="btn btn--primary btn--sm">
-                <PlusIcon />
-                Log a match
-              </Link>
-            </div>
-          )}
+          <PlayerSocial playerId={player.id} followers={followers} following={following} />
         </div>
       </header>
+
+      {/* You cannot follow, message or play yourself, so your own page has no
+          action row at all — and does not need one: it has Edit profile. */}
+      {!isMe && <PlayerActions playerId={player.id} firstName={player.name.split(" ")[0]} />}
 
       <div className="split">
         {/* ── RATING ────────────────────────────────────────────────────── */}
@@ -106,10 +101,7 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
 
             {rated ? (
               <>
-                <div className="rating__level">
-                  <strong>{level!.name}</strong>
-                  {rank && ` · #${rank} in singles`}
-                </div>
+                {rank && <div className="rating__level">#{rank} in singles</div>}
 
                 <div className="chart">
                   <div className="label">Rating Trajectory</div>
