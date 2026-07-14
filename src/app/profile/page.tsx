@@ -145,7 +145,7 @@ export default function Profile() {
                with 14 matches actually has. */}
         <section className="card card--pad rise" style={{ animationDelay: "80ms" }}>
           <h2 className="display" style={{ fontSize: 20 }}>
-            Rating Confidence
+            Rating
           </h2>
 
           <ul className="conf">

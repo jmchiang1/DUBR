@@ -48,17 +48,23 @@ export function PendingCard({
         <Side side={m.theirs} winner={!m.won} />
       </div>
 
-      <p className="match__logged">
-        Logged by <strong>{m.loggedBy}</strong>. Your rating does not move until you confirm.
-      </p>
+      {/* The footer fills whatever height is left and sits at the BOTTOM of it.
+          A singles match has half the player rows of a doubles match, so without
+          this the two cards side by side in the grid put their Confirm buttons at
+          different heights — and the eye reads that as two different controls. */}
+      <div className="match__foot">
+        <p className="match__logged">
+          Logged by <strong>{m.loggedBy}</strong>. Your rating does not move until you confirm.
+        </p>
 
-      <div className="match__actions">
-        <button className="btn btn--ghost btn--sm" onClick={() => onResolve("dispute")}>
-          Dispute
-        </button>
-        <button className="btn btn--primary btn--sm" onClick={() => onResolve("confirm")}>
-          Confirm result
-        </button>
+        <div className="match__actions">
+          <button className="btn btn--ghost btn--sm" onClick={() => onResolve("dispute")}>
+            Dispute
+          </button>
+          <button className="btn btn--primary btn--sm" onClick={() => onResolve("confirm")}>
+            Confirm result
+          </button>
+        </div>
       </div>
     </article>
   );

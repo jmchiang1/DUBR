@@ -12,14 +12,9 @@
   background: var(--surface);
 }
 
+/* One padding for every card, at every width: 16px. */
 .card--pad {
-  padding: var(--gap-md) var(--pad-page);
-}
-
-@media (min-width: 1024px) {
-  .card--pad {
-    padding: var(--gap-lg);
-  }
+  padding: var(--gap-md);
 }
 
 .card__head {
@@ -27,7 +22,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--gap);
-  padding: var(--gap-md) var(--pad-page);
+  padding: var(--gap-md);
 }
 
 .card__title {
@@ -348,9 +343,6 @@
 }
 
 @media (min-width: 1024px) {
-  .profile {
-    padding: var(--gap-lg);
-  }
   .profile__name {
     font-size: 26px;
   }
@@ -416,7 +408,7 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  padding: var(--gap-lg) var(--pad-page);
+  padding: var(--gap-md);
 }
 
 .rating__row {
@@ -458,9 +450,6 @@
 }
 
 @media (min-width: 1024px) {
-  .rating {
-    padding: var(--gap-lg);
-  }
   .rating__figure {
     font-size: 96px;
   }
@@ -594,14 +583,13 @@
    rating they carried in and the direction it moved. A row showing only your
    own delta hides the one thing the rating system does. */
 
+/* Per the Figma: a flat 16px on every edge, at every width. The card is a
+   COLUMN, because the footer below grows into whatever height is left. */
 .match {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
   padding: var(--gap-md);
-}
-
-@media (min-width: 1024px) {
-  .match {
-    padding: var(--gap-md) var(--pad-page);
-  }
 }
 
 .match__top {
@@ -629,7 +617,7 @@
 }
 
 .match__event {
-  margin-top: var(--gap);
+  padding-top: var(--gap-sm);
   font-size: 15px;
   font-weight: 600;
   line-height: 1.35;
@@ -654,7 +642,10 @@
   display: flex;
   flex-direction: column;
   gap: var(--gap);
-  margin-top: var(--gap-md);
+  padding: var(--gap) 0;
+  /* The players are the record of what happened — they never get compressed to
+     make room for the footer. Only the footer's own slack absorbs the difference. */
+  flex-shrink: 0;
 }
 
 .match__side {
@@ -2761,9 +2752,26 @@
   color: #ffc43d;
 }
 
+/* Fills the height left over and pins its contents to the BOTTOM of it.
+   A singles match has half the player rows of a doubles match, so without this
+   two cards side by side in the grid put their Confirm buttons at different
+   heights — and the eye reads that as two different controls. */
+.match__foot {
+  display: flex;
+  /* `flex: 1 1 auto`, NOT the Figma's `1 0 0`. A flex-basis of 0 makes the footer
+     contribute ZERO height to the card's intrinsic size — the grid row then sizes
+     itself as though the footer did not exist, and the footer paints straight over
+     the player rows. `auto` keeps its content in the measurement; grow still lets
+     it eat the slack on the shorter card. */
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
+  width: 100%;
+}
+
 .match__logged {
-  margin-top: var(--gap-md);
-  padding-top: var(--gap);
+  padding-top: 13px;
   border-top: 1px solid var(--line);
   font-size: 12px;
   line-height: 1.5;
@@ -2782,7 +2790,7 @@
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--gap-sm);
-  margin-top: var(--gap);
+  padding-top: var(--gap-sm);
 }
 
 /* ── Rating confidence ────────────────────────────────────────────────────── */
