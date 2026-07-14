@@ -50,7 +50,6 @@ export default function Messages() {
     <div className="stack">
       <header className="page-head rise">
         <h1 className="page-title display">Messages</h1>
-        <p className="page-sub">Every conversation here is one court booking away from a match.</p>
       </header>
 
       <div className={`inbox rise ${thread ? "is-open" : ""}`} style={{ animationDelay: "60ms" }}>

@@ -18,9 +18,6 @@ export default function Rankings() {
     <div className="stack--tight stack">
       <header className="page-head rise">
         <h1 className="page-title display">Rankings</h1>
-        <p className="page-sub">
-          Every rated player, ordered by DUBR. Updated after each confirmed match.
-        </p>
       </header>
 
       <div className="tabs rise" style={{ animationDelay: "40ms" }}>
@@ -53,7 +50,7 @@ export default function Rankings() {
             Player
           </div>
           <div className="label board__record">Record</div>
-          <div className="label board__rating">DUBR</div>
+          <div className="label board__rating">Rating</div>
         </div>
 
         <ul>

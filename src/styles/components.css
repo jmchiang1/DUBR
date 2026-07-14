@@ -764,9 +764,8 @@
 
 .tab {
   position: relative;
-  margin-bottom: -1px;
   padding-bottom: 10px;
-  font-size: 13px;
+  font-size: 16px;
   color: var(--faint);
   transition: color 0.15s;
 }
@@ -806,6 +805,20 @@
 
 .board__head {
   border-bottom: 1px solid var(--line);
+}
+
+/* The header row is ONE voice: same size, same colour, in every column.
+   Each header cell also carries its column's class (.board__rank,
+   .board__rating, …) so it lines up with the data beneath it — but those
+   classes bring their column's TYPE with them (.board__rating is 16px,
+   .board__rank 15px, .board__record is --mute while .label is --faint), which
+   left the header reading as four different things. This wins on specificity
+   (0,2,0) and restores the labels to a single register. Column classes still
+   supply the widths and alignment, which is all they are wanted for here. */
+.board__head .label {
+  font-size: 12px;
+  line-height: 1;
+  color: var(--faint);
 }
 
 .board__row {
@@ -880,13 +893,13 @@
   width: 52px;
   flex-shrink: 0;
   text-align: right;
-  font-size: 16px;
+  font-size: 12px;
 }
 
 @media (min-width: 1024px) {
   .board__rating {
     width: 64px;
-    font-size: 18px;
+    font-size: 12px;
   }
 }
 

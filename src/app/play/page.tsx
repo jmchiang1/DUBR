@@ -41,9 +41,6 @@ export default function OpenPlay() {
     <div className="stack">
       <header className="page-head rise">
         <h1 className="page-title display">Open Play</h1>
-        <p className="page-sub">
-          Rated sessions. Everything you play here counts toward your DUBR.
-        </p>
       </header>
 
       <ul className="grid-cards grid-cards--three">

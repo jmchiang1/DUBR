@@ -26,7 +26,6 @@ export default function Players() {
     <div className="stack">
       <header className="page-head rise">
         <h1 className="page-title display">Players</h1>
-        <p className="page-sub">A close match makes a better game — and moves your rating more.</p>
       </header>
 
       <div className="row rise" style={{ maxWidth: 520 }}>
