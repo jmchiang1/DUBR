@@ -1288,35 +1288,21 @@
   margin-bottom: var(--gap);
 }
 
-/* The kind of event, colour-coded. This is the one place a second colour family
-   is allowed: it is a taxonomy, not a value judgement, so it cannot borrow the
-   aqua/red axis, which means up and down. */
+/* The kind of event. NEUTRAL, and the same on every page.
+   It used to be colour-coded — aqua for open play, amber for a tournament,
+   periwinkle for a league. Two problems. It spent AQUA on the word "Open Play",
+   and aqua has three jobs in this app (a rating gain, the active nav, the primary
+   action) — a category label is none of them. And it introduced a second colour
+   family whose only meaning was "which sort", competing for the eye with the
+   aqua/red axis, which means up and down. The word already says which sort. */
 .event__kind {
   padding: 3px var(--gap-sm);
   border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.14);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-}
-
-.event__kind.is-open-play {
-  background: rgba(0, 229, 192, 0.18);
-  color: var(--aqua);
-}
-
-.event__kind.is-tournament {
-  background: rgba(255, 196, 61, 0.18);
-  color: #ffc43d;
-}
-
-.event__kind.is-league {
-  background: rgba(140, 160, 255, 0.2);
-  color: #a9b8ff;
-}
-
-.event__kind.is-clinic {
-  background: rgba(255, 255, 255, 0.14);
   color: var(--mute);
 }
 
@@ -2828,22 +2814,8 @@
   font-size: 18px;
 }
 
-.conf__bar {
-  height: 5px;
-  margin-top: var(--gap-sm);
-  border-radius: var(--radius-pill);
-  background: rgba(0, 12, 67, 0.4);
-  overflow: hidden;
-}
-
-.conf__fill {
-  height: 100%;
-  border-radius: var(--radius-pill);
-  background: var(--aqua);
-}
-
 .conf__sub {
-  margin-top: 6px;
+  margin-top: 4px;
   font-size: 11px;
   color: var(--faint);
 }
@@ -2868,22 +2840,6 @@
   border-bottom: 0;
 }
 
-.reg__icon {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  border-radius: var(--radius-sm);
-  background: var(--elevated);
-}
-
-.reg__icon svg {
-  width: 15px;
-  height: 15px;
-  color: var(--mute);
-}
-
 .reg__name {
   font-size: 13px;
   overflow: hidden;
@@ -2898,8 +2854,4 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.menu__item .reg__icon {
-  margin-right: 0;
 }

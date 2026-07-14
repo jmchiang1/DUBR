@@ -6,14 +6,7 @@ import { ProfileEditor } from "@/components/profile-editor";
 import { Modal } from "@/components/modal";
 import { useProfile } from "@/components/profile-store";
 import { PendingCard } from "@/components/pending-card";
-import {
-  ChevronIcon,
-  PinIcon,
-  PencilIcon,
-  CalendarIcon,
-  ShuttleIcon,
-  CopyIcon,
-} from "@/components/icons";
+import { ChevronIcon, PinIcon, PencilIcon, CopyIcon } from "@/components/icons";
 import {
   ME,
   PENDING,
@@ -139,10 +132,11 @@ export default function Profile() {
       </section>
 
       <div className="split">
-        {/* ── 2. RATING CONFIDENCE ───────────────────────────────────────
-               Home prints the number. This says how much to trust it, and what
-               would make it more trustworthy — which is the question a player
-               with 14 matches actually has. */}
+        {/* ── 2. RATING ─────────────────────────────────────────────────────
+               No bar. A progress bar frames a rating as something you FILL, and
+               a rating is not progress — it is a measurement, and 5.302 is not
+               "72% of the way" to anything. The reliability figure it was drawn
+               from is a real number, so it is printed as one. */}
         <section className="card card--pad rise" style={{ animationDelay: "80ms" }}>
           <h2 className="display" style={{ fontSize: 20 }}>
             Rating
@@ -152,8 +146,8 @@ export default function Profile() {
             {DISCIPLINES.map((d) => {
               const v = ME[d.id];
               const rated = v !== null;
-              const pct = rated ? Math.round(ME.reliability * 100) : 0;
-              const need = RELIABILITY_THRESHOLD - ME.matches;
+              const pct = Math.round(ME.reliability * 100);
+              const need = Math.max(RELIABILITY_THRESHOLD - ME.matches, 1);
 
               return (
                 <li key={d.id} className="conf__row">
@@ -164,30 +158,15 @@ export default function Profile() {
                     </span>
                   </div>
 
-                  <div className="conf__bar">
-                    <div className="conf__fill" style={{ width: `${pct}%` }} />
-                  </div>
-
                   <div className="conf__sub">
                     {rated
-                      ? `${pct}% settled — ${
-                          pct >= 80
-                            ? "tournament-ready"
-                            : "a few more matches will tighten this"
-                        }`
-                      : `Unrated — ${Math.max(need, 1)} more ${
-                          Math.max(need, 1) === 1 ? "match" : "matches"
-                        } to place you on the scale`}
+                      ? `${pct}% reliable${pct >= 80 ? " · tournament-ready" : ""}`
+                      : `Unrated · ${need} more ${need === 1 ? "match" : "matches"} to place you`}
                   </div>
                 </li>
               );
             })}
           </ul>
-
-          <p className="filters__note" style={{ marginTop: 16 }}>
-            Confidence rises with matches played and with how varied your opponents are. Beating
-            the same partner ten times moves it less than ten different opponents would.
-          </p>
         </section>
 
         {/* ── 3. WHAT YOU ARE SIGNED UP FOR ─────────────────────────────── */}
@@ -210,9 +189,6 @@ export default function Profile() {
             <ul className="reg">
               {events.map((e) => (
                 <li key={e.id} className="reg__row">
-                  <span className="reg__icon">
-                    <CalendarIcon />
-                  </span>
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div className="reg__name">{e.name}</div>
                     <div className="reg__meta">
@@ -234,9 +210,6 @@ export default function Profile() {
             {/* Your public page already exists. Say so, rather than rebuilding it
                 here for a third time. */}
             <Link href="/players/me" className="menu__item">
-              <span className="reg__icon">
-                <ShuttleIcon />
-              </span>
               <div className="menu__body">
                 <div className="menu__label">View public profile</div>
                 <div className="menu__sub">How other players see you</div>
