@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Chart,
   Filler,
@@ -93,16 +93,18 @@ function useReducedMotion() {
  * The context Chart.js hands to a per-element animation callback. It ships
  * `ScriptableContext` for scales and elements, but the ANIMATION context is a
  * different object it does not export a type for — it carries `index`/`type`
- * (not `dataIndex`), and it is the same mutable object across frames, which is
- * what lets the draw below latch a `started` flag onto it.
+ * (not `dataIndex`).
+ *
+ * Note what is NOT on here: a `started` flag. Chart.js CACHES these context
+ * objects per element and hands the same one back on every subsequent update, so
+ * a flag latched onto the context outlives the draw that set it. That is exactly
+ * what broke the range switch — see the latch in the options below.
  */
 type DrawContext = {
   type: string;
   index: number;
   datasetIndex: number;
   chart: Chart;
-  xStarted?: boolean;
-  yStarted?: boolean;
 };
 
 type Animations = {
@@ -174,6 +176,14 @@ export function Trend({
   const up = points[points.length - 1] >= points[0];
   const color = up ? palette.gain : palette.loss;
 
+  /* Flips after the first paint. Read only from inside the animation callbacks —
+     never during render — so the first draw sees `false` and every redraw after it
+     sees `true`. Its one job is to decide whether to wait out the card's entrance. */
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+  }, []);
+
   const options = useMemo<ChartOptions<"line">>(() => {
     /* Chart.js autoscales to the data, which for a rating that moves in hundredths
        would amplify noise into cliffs. Pad the domain so the slope stays honest. */
@@ -191,19 +201,48 @@ export function Trend({
        is the mechanism: a point with no x yet is not drawn at all, so the line has a
        genuine end rather than being revealed under a mask.
 
-       A year of matches is ~90 points, at which the per-point step would fall under
-       a frame and the stagger would degenerate into a wipe; the floor keeps each
-       point's own arrival visible, at the cost of a longer total draw. */
-    const step = Math.max(620 / Math.max(points.length - 1, 1), 12);
+       The step is the gap between one point's arrival and the next. Nominally it is
+       the whole draw (620ms) split across the points, but that only works in the
+       middle of the range, so it is CLAMPED at both ends:
+
+       - FLOOR (12ms). A year is ~90 points, at which an unclamped step falls under a
+         frame and the stagger degenerates into a wipe. The floor keeps each point's
+         own arrival visible, at the cost of a longer total draw.
+       - CEILING (120ms). A week can be TWO points, at which an unclamped step is
+         620ms — and a line of one point draws nothing at all, so the canvas would
+         sit empty for two thirds of a second and then snap into existence. The
+         ceiling is what stops a sparse range from reading as a bug. */
+    const step = Math.min(Math.max(620 / Math.max(points.length - 1, 1), 12), 120);
 
     const previousY = (ctx: DrawContext) =>
       ctx.index === 0
         ? ctx.chart.scales.y.getPixelForValue(points[0])
         : ctx.chart.getDatasetMeta(ctx.datasetIndex).data[ctx.index - 1].getProps(["y"], true).y;
 
-    /* The `started` flags latch per element: Chart.js re-evaluates `delay` on every
-       update, so without the latch each point would keep re-queuing its own delay and
-       the line would never finish arriving. */
+    /* A point must claim its staggered delay ONCE per draw. Chart.js re-evaluates
+       `delay` on every update (a hover, a resize), and without a latch each point
+       would keep re-queuing its own delay and the line would never finish arriving.
+
+       The latch belongs to THE DRAW, not to the element — these two Sets live in
+       this closure, and the closure is rebuilt whenever `points` changes, which is
+       exactly when a new draw begins. Latching onto the Chart.js element context
+       instead (`ctx.xStarted = true`) looks equivalent and is not: Chart.js caches
+       those context objects per element and hands the same one back forever, so the
+       flags survived the switch to a new range. Every point then reported "already
+       started", took delay 0, and the 1W and 1M lines appeared fully drawn — only
+       1Y, which is what mounts, ever animated at all. */
+    const startedX = new Set<number>();
+    const startedY = new Set<number>();
+
+    /* The `delay` prop holds the first draw back until the card's `.rise` has
+       finished. A RE-draw has no card to wait for — the user just pressed 1W and is
+       looking straight at the chart — so it starts immediately.
+
+       Read as a FUNCTION, called from inside the animation callbacks: those run
+       when Chart.js updates, not while React renders, and a ref may not be read
+       during render. */
+    const hold = () => (mounted.current ? 0 : delay);
+
     const draw: Animations = {
       x: {
         type: "number",
@@ -211,9 +250,9 @@ export function Trend({
         duration: step,
         from: NaN,
         delay: (ctx) => {
-          if (ctx.type !== "data" || ctx.xStarted) return 0;
-          ctx.xStarted = true;
-          return delay + ctx.index * step;
+          if (ctx.type !== "data" || startedX.has(ctx.index)) return 0;
+          startedX.add(ctx.index);
+          return hold() + ctx.index * step;
         },
       },
       y: {
@@ -222,9 +261,9 @@ export function Trend({
         duration: step * 1.6,
         from: previousY,
         delay: (ctx) => {
-          if (ctx.type !== "data" || ctx.yStarted) return 0;
-          ctx.yStarted = true;
-          return delay + ctx.index * step;
+          if (ctx.type !== "data" || startedY.has(ctx.index)) return 0;
+          startedY.add(ctx.index);
+          return hold() + ctx.index * step;
         },
       },
     };

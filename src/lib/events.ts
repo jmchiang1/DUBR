@@ -245,6 +245,85 @@ export function eligible(e: BadmintonEvent, rating: number | null): boolean {
   return rating >= e.band[0] && rating <= e.band[1];
 }
 
+/* ── Filters ──────────────────────────────────────────────────────────────── */
+
+export const EVENT_DISTANCE_MAX = 3000;
+
+export type EventFilters = {
+  q: string;
+  /** "all" is the absence of a filter, not a fifth kind. */
+  kind: EventKind | "all";
+  /** Miles. 0 = no limit — a universal rating means Milpitas counts, so the
+      default cannot be "nearby". */
+  distance: number;
+  formats: string[];
+  /** Only events my rating actually qualifies for. */
+  qualifyOnly: boolean;
+  /** Only events that move my rating. Excludes clinics. */
+  ratedOnly: boolean;
+  /** Only free entry. */
+  freeOnly: boolean;
+  /** Hide events with no spots left. */
+  hideFull: boolean;
+};
+
+export const DEFAULT_EVENT_FILTERS: EventFilters = {
+  q: "",
+  kind: "all",
+  distance: 0,
+  formats: [],
+  qualifyOnly: false,
+  ratedOnly: false,
+  freeOnly: false,
+  hideFull: false,
+};
+
+/** How many clauses are actually narrowing the list. Drives the badge on the
+    Filter button, so it must count only what NARROWS — `kind: "all"` and
+    `distance: 0` are the absence of a filter and must not be counted. */
+export function activeEventFilterCount(f: EventFilters): number {
+  let n = 0;
+  if (f.kind !== "all") n++;
+  if (f.distance > 0) n++;
+  if (f.formats.length > 0) n++;
+  if (f.qualifyOnly) n++;
+  if (f.ratedOnly) n++;
+  if (f.freeOnly) n++;
+  if (f.hideFull) n++;
+  return n;
+}
+
+export function filterEvents(
+  f: EventFilters,
+  rating: number | null,
+  events: BadmintonEvent[] = EVENTS,
+): BadmintonEvent[] {
+  /* Name, host AND city. Nobody remembers the title of the thing they went to
+     last month — they remember it was the Flushing one, or that Empire ran it. */
+  const term = f.q.trim().toLowerCase();
+
+  return events
+    .filter(
+      (e) =>
+        !term ||
+        e.name.toLowerCase().includes(term) ||
+        e.host.toLowerCase().includes(term) ||
+        e.city.toLowerCase().includes(term),
+    )
+    .filter((e) => f.kind === "all" || e.kind === f.kind)
+    .filter((e) => f.distance === 0 || e.distance <= f.distance)
+    .filter(
+      (e) =>
+        f.formats.length === 0 ||
+        e.formats.some((fmtName) => f.formats.includes(fmtName.toLowerCase())),
+    )
+    .filter((e) => !f.qualifyOnly || eligible(e, rating))
+    .filter((e) => !f.ratedOnly || e.rated)
+    .filter((e) => !f.freeOnly || e.fee === 0)
+    .filter((e) => !f.hideFull || e.spots > 0)
+    .sort((a, b) => a.distance - b.distance);
+}
+
 export function fmtFee(fee: number): string {
   return fee === 0 ? "Free" : `$${fee}`;
 }

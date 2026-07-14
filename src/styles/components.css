@@ -1665,16 +1665,36 @@
   background: var(--surface);
 }
 
+/* ── The toolbar: search + Filter, on one row. ────────────────────────────
+   The filters used to be a column pinned beside the results, which spent a
+   third of the page on controls that sit idle most of the time. Now they are
+   behind one button, and the results get the width. */
+
+.toolbar {
+  display: flex;
+  align-items: stretch;
+  gap: var(--gap-sm);
+  max-width: 560px;
+}
+
 .filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   flex-shrink: 0;
   padding: 0 var(--gap);
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--surface);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--mute);
   transition: background 0.15s, color 0.15s;
+}
+
+.filter-btn svg {
+  width: 15px;
+  height: 15px;
 }
 
 .filter-btn:hover {
@@ -1687,47 +1707,86 @@
   color: var(--on-aqua);
 }
 
-/* ── The player directory ─────────────────────────────────────────────────
-   Filters in a column beside the results on desktop. Below 1024px they collapse
-   into a sheet that opens from the Filters button — the results are what you came
-   for, and a screenful of controls above them buries the answer. */
+/* ── The filter popover ───────────────────────────────────────────────────
+   A popover under the button on desktop; a bottom sheet on mobile. At 380px a
+   popover hanging off the right edge of a phone is unreachable, and a sheet on
+   a 1440px desktop is a modal for no reason — so it is both, by breakpoint. */
 
-.directory {
-  display: grid;
-  gap: var(--gap-md);
+.filter-menu {
+  position: relative;
+  display: flex;
 }
 
-@media (min-width: 1024px) {
-  .directory {
-    grid-template-columns: 260px minmax(0, 1fr);
-    gap: var(--gap-lg);
-    align-items: start;
+.filter-menu__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 12, 67, 0.6);
+  backdrop-filter: blur(2px);
+}
+
+.filter-menu__panel {
+  position: fixed;
+  z-index: 51;
+  display: flex;
+  flex-direction: column;
+  /* Mobile: a sheet, anchored to the bottom edge and capped so it can never
+     grow taller than the screen it has to fit inside. */
+  inset: auto 0 0 0;
+  max-height: 85dvh;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  /* The card is translucent; over the scrim it needs a solid floor or the page
+     behind shows straight through the controls. */
+  background: #1d2a63;
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.4);
+  animation: sheet-up 0.22s var(--ease) both;
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
   }
-  .directory__panel {
-    position: sticky;
-    /* Clears nothing above it up here, so it just needs to breathe. */
-    top: var(--gap-md);
+  to {
+    transform: none;
+    opacity: 1;
   }
 }
 
-.directory__results {
-  min-width: 0;
-}
-
-@media (max-width: 1023px) {
-  .directory__panel {
+@media (min-width: 640px) {
+  .filter-menu__scrim {
     display: none;
   }
-  .directory.is-open .directory__panel {
-    display: block;
+
+  .filter-menu__panel {
+    position: absolute;
+    /* Anchored to the button's RIGHT edge, so a 360px panel opening from a
+       button near the right of the toolbar stays on screen. */
+    inset: calc(100% + 8px) 0 auto auto;
+    width: 360px;
+    max-height: min(70dvh, 620px);
+    border-radius: var(--radius-md);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
   }
 }
 
-/* The Filters button only exists on mobile; the panel is always open above it. */
-@media (min-width: 1024px) {
-  .filters__toggle {
-    display: none;
-  }
+/* Only the FIELDS scroll. The footer stays put, so Done and Reset are reachable
+   without scrolling to the bottom of a long panel. */
+.filter-menu__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.filter-menu__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+  flex-shrink: 0;
+  padding: var(--gap) var(--gap-md) max(var(--gap), env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
 }
 
 .filter-btn__count {

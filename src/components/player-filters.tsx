@@ -55,19 +55,11 @@ export function Filters({
   const toggle = <T,>(list: T[], item: T): T[] =>
     list.includes(item) ? list.filter((x) => x !== item) : [...list, item];
 
+  /* No heading and no Reset here any more: this now renders INSIDE the filter
+     popover, which supplies both. Two Resets, one above the fields and one
+     below, is a coin toss the user should not have to call. */
   return (
     <div className="filters">
-      <div className="filters__head">
-        <h2 className="filters__title display">Filters</h2>
-        <button
-          className="filters__reset"
-          onClick={() => onChange({ ...DEFAULT_FILTERS, q: f.q })}
-          disabled={active === 0}
-        >
-          Reset
-        </button>
-      </div>
-
       {/* ── LOCATION ─────────────────────────────────────────────────────
           A free box, not a dropdown. A dropdown can only offer the places that
           happen to be on today's roster — it cannot answer "Queens", which is a

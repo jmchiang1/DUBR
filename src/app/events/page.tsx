@@ -1,39 +1,29 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PinIcon, CalendarIcon } from "@/components/icons";
+import { PinIcon, CalendarIcon, SearchIcon } from "@/components/icons";
+import { FilterMenu } from "@/components/filter-menu";
+import { EventFilterPanel } from "@/components/event-filters";
 import { ME } from "@/lib/dubr";
 import {
   EVENTS,
-  KINDS,
   KIND_LABEL,
+  DEFAULT_EVENT_FILTERS,
+  activeEventFilterCount,
+  filterEvents,
   eligible,
   fmtBand,
   fmtFee,
   fmtDistance,
   type BadmintonEvent,
-  type EventKind,
+  type EventFilters,
 } from "@/lib/events";
 
-type Filter = EventKind | "all";
-
 export default function Events() {
-  const [kind, setKind] = useState<Filter>("all");
-  /** Off by default. The whole point of a universal rating is that an event in
-      Milpitas counts the same as one down the road — hiding the far ones by
-      default would quietly argue against the product. */
-  const [nearby, setNearby] = useState(false);
-  const [qualifyOnly, setQualifyOnly] = useState(false);
+  const [filters, setFilters] = useState<EventFilters>(DEFAULT_EVENT_FILTERS);
 
-  const results = useMemo(
-    () =>
-      EVENTS.filter((e) => kind === "all" || e.kind === kind)
-        .filter((e) => !nearby || e.distance <= 50)
-        .filter((e) => !qualifyOnly || eligible(e, ME.singles))
-        .sort((a, b) => a.distance - b.distance),
-    [kind, nearby, qualifyOnly],
-  );
-
+  const results = useMemo(() => filterEvents(filters, ME.singles), [filters]);
+  const active = activeEventFilterCount(filters);
   const hosts = new Set(EVENTS.map((e) => e.host)).size;
 
   return (
@@ -46,45 +36,33 @@ export default function Events() {
         </p>
       </header>
 
-      <div className="tabs rise" style={{ animationDelay: "40ms" }}>
-        <button
-          onClick={() => setKind("all")}
-          aria-pressed={kind === "all"}
-          className={`tab ${kind === "all" ? "is-active" : ""}`}
-        >
-          All
-        </button>
-        {KINDS.map((k) => (
-          <button
-            key={k.id}
-            onClick={() => setKind(k.id)}
-            aria-pressed={kind === k.id}
-            className={`tab ${kind === k.id ? "is-active" : ""}`}
-          >
-            {k.label}
-          </button>
-        ))}
-      </div>
+      {/* Search and Filter on one row — the same control as /players, because a
+          filter that behaves differently on two pages of one app is two things
+          to learn instead of one. */}
+      <div className="toolbar rise">
+        <div className="searchbar">
+          <SearchIcon className="search__icon" />
+          <input
+            className="search__input"
+            value={filters.q}
+            onChange={(e) => setFilters({ ...filters, q: e.target.value })}
+            placeholder="Search events, hosts, cities"
+            aria-label="Search events"
+          />
+        </div>
 
-      <div className="row rise" style={{ animationDelay: "60ms" }}>
-        <button
-          onClick={() => setNearby((v) => !v)}
-          aria-pressed={nearby}
-          className={`filter-btn ${nearby ? "is-active" : ""}`}
+        <FilterMenu
+          active={active}
+          onReset={() => setFilters({ ...DEFAULT_EVENT_FILTERS, q: filters.q })}
         >
-          Within 50 mi
-        </button>
-        <button
-          onClick={() => setQualifyOnly((v) => !v)}
-          aria-pressed={qualifyOnly}
-          className={`filter-btn ${qualifyOnly ? "is-active" : ""}`}
-        >
-          I qualify
-        </button>
+          <EventFilterPanel value={filters} onChange={setFilters} />
+        </FilterMenu>
       </div>
 
       {results.length === 0 ? (
-        <p className="card empty">No events match those filters.</p>
+        <p className="card empty">
+          No events match. {active > 0 && "Try widening a filter."}
+        </p>
       ) : (
         <ul className="grid-cards grid-cards--three rise" style={{ animationDelay: "80ms" }}>
           {results.map((e) => (
@@ -94,7 +72,8 @@ export default function Events() {
       )}
 
       <p className="footnote">
-        Showing {results.length} of {EVENTS.length} events, hosted by {hosts} independent venues.
+        {results.length} of {EVENTS.length} events, hosted by {hosts} independent venues
+        {active > 0 && ` · ${active} ${active === 1 ? "filter" : "filters"} applied`}
       </p>
     </div>
   );

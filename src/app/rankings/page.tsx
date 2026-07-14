@@ -95,12 +95,17 @@ export default function Rankings() {
         <Summary label="Matches" value={String(totalMatches)} />
       </section>
 
+      {rows.length === 0 && <p className="card empty">Nobody on the board is called “{q}”.</p>}
+
       {/* ── ONE table. Rated and unrated players together — an unrated player is
              still a member of the club, and hiding them in a separate section
              below the fold made them easy to miss. They are listed without a
              rank, because a rank is a claim DUBR has not earned the right to
              make about them yet. ─────────────────────────────────────────── */}
-      <section className="card rise" style={{ animationDelay: "120ms", overflow: "hidden" }}>
+      <section
+        className="card rise"
+        style={{ animationDelay: "120ms", overflow: "hidden", display: rows.length ? "" : "none" }}
+      >
         <div className="board__head">
           <div className="label board__rank">#</div>
           <div className="label board__player" style={{ paddingLeft: 42 }}>
