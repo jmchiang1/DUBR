@@ -56,7 +56,14 @@ export function Avatar({ className = "avatar" }: { className?: string }) {
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
-  const isActive = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
+  /**
+   * A nav item is active on its own route and anything BELOW it — /play lights up
+   * for /play/tuesday-lic. It must match on the path SEGMENT, not the string: a
+   * bare `startsWith("/play")` also matches "/players", which lit Open Play up
+   * every time you were on the Players page.
+   */
+  const isActive = (href: string) =>
+    href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`);
   /* Read from the same store /messages writes to, so the badge cannot go on
      claiming unread messages you are in the middle of reading. */
   const { unread } = useMessages();

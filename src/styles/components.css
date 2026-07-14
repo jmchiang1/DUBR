@@ -937,6 +937,98 @@
   background: var(--aqua);
 }
 
+/* An unrated player holds no rank, so the cell shows an em-dash rather than a
+   number. It must not read as a rank of zero. */
+.board__norank {
+  color: var(--faint);
+}
+
+/* ── Pagination ───────────────────────────────────────────────────────────── */
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+  padding: var(--gap-sm) 4px;
+}
+
+.pager__count {
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.pager__controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.pager__btn {
+  display: grid;
+  place-items: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 6px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: 13px;
+  color: var(--mute);
+  transition: background 0.15s, color 0.15s;
+}
+
+.pager__btn:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--bone);
+}
+
+.pager__btn.is-active {
+  background: var(--aqua);
+  color: var(--on-aqua);
+  font-weight: 600;
+}
+
+.pager__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* The chevron ships pointing forward; the Previous button turns it around. */
+.pager__btn svg {
+  width: 16px;
+  height: 16px;
+  transform: rotate(180deg);
+}
+
+.pager__btn--next svg {
+  transform: none;
+}
+
+.pager__gap {
+  padding: 0 2px;
+  font-size: 13px;
+  color: var(--faint);
+}
+
+/* A board you cannot find yourself on is a board you stop opening. */
+.pager__me {
+  height: 32px;
+  margin-right: var(--gap-sm);
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--aqua);
+  transition: background 0.15s;
+}
+
+.pager__me:hover {
+  background: var(--surface-hover);
+}
+
 /* Provisional players: separated, honestly labelled, never given a default
    rating. The old board listed zero-match players at 5.500 / "Advanced", which
    made every real rating above them look invented too. */

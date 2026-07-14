@@ -560,19 +560,156 @@ export function axisTicks(points: RatingPoint[], range: Range): { index: number;
 }
 
 export function leaderboard(discipline: Discipline): Player[] {
-  return [...PLAYERS]
+  return [...ROSTER]
     .filter((p) => p[discipline] !== null)
     .sort((a, b) => (b[discipline] as number) - (a[discipline] as number));
 }
 
 export function provisional(discipline: Discipline): Player[] {
-  return PLAYERS.filter((p) => p[discipline] === null);
+  return ROSTER.filter((p) => p[discipline] === null);
 }
+
+/* ── The board ────────────────────────────────────────────────────────────── */
+
+export const PAGE_SIZE = 50;
+
+export type BoardRow = {
+  player: Player;
+  /** null for an unrated player: they are listed, but they do not hold a rank. */
+  rank: number | null;
+};
+
+/**
+ * Every player in one list — rated and unrated together.
+ *
+ * Rated players sort by rating and take ranks 1..N. Unrated players follow, and
+ * are given NO rank: a rank is a claim about where you stand, and DUBR does not
+ * make that claim until it has enough matches to back it. They are ordered by
+ * how close they are to qualifying, so the row nearest a real rating sits
+ * highest — the list reads as a queue, not as a scrapheap.
+ */
+export function board(discipline: Discipline): BoardRow[] {
+  const rated = leaderboard(discipline).map((player, i) => ({ player, rank: i + 1 }));
+
+  const unrated = provisional(discipline)
+    .sort((a, b) => b.matches - a.matches)
+    .map((player) => ({ player, rank: null }));
+
+  return [...rated, ...unrated];
+}
+
+/** The 1-indexed page a given player falls on, so "find me" can jump to it. */
+export function pageOf(rows: BoardRow[], id: string): number {
+  const i = rows.findIndex((r) => r.player.id === id);
+  return i === -1 ? 1 : Math.floor(i / PAGE_SIZE) + 1;
+}
+
+/* ── The rest of the field ─────────────────────────────────────────────────
+   PLAYERS above are the hand-written ones that appear in real matches. These
+   are the rest of the club, so the board has a realistic depth to paginate.
+
+   DETERMINISTIC, seeded off the index — never Math.random(). A random roster
+   would generate different players on the server and on the client and throw a
+   hydration mismatch, and the board would reshuffle on every visit. Replace
+   this whole block with the real roster when there is one. */
+
+const FIRST = [
+  "Wei", "Aditya", "Marcus", "Priya", "Sofia", "Hiro", "Elena", "Rahul", "Nina", "Diego",
+  "Yuki", "Omar", "Clara", "Tomas", "Anika", "Leo", "Mei", "Ravi", "Isla", "Kenji",
+  "Zara", "Felix", "Lena", "Arjun", "Nora", "Pablo", "Ivy", "Sanjay", "Maya", "Erik",
+  "Tara", "Nikhil", "Rosa", "Jae", "Lucia", "Amir", "Freya", "Dev", "Cara", "Miguel",
+  "Hana", "Vikram", "Elsa", "Karim", "Talia", "Bruno", "Sana", "Oscar", "Ines", "Rohit",
+  "Vera", "Ali",
+];
+
+const LAST = [
+  "Chen", "Patel", "Nguyen", "Silva", "Kim", "Tanaka", "Rossi", "Sharma", "Novak", "Costa",
+  "Sato", "Haddad", "Muller", "Duarte", "Reddy", "Berg", "Wu", "Iyer", "Murphy", "Ito",
+  "Khan", "Weber", "Larsen", "Mehta", "Olsen", "Ortiz", "Doyle", "Rao", "Lopez", "Voss",
+  "Bose", "Gupta", "Marin", "Park", "Ferrer", "Aziz", "Dahl", "Menon", "Byrne", "Torres",
+  "Mori", "Singh", "Holm", "Nasser", "Levi", "Alves", "Malik", "Falk", "Neves", "Verma",
+  "Petrov", "Aslan",
+];
+
+const CLUBS = ["Kotofit LIC", "Kotofit Flushing", "Kotofit JC"];
+const LOCATIONS = ["Long Island City, NY", "Flushing, NY", "Jersey City, NJ"];
+
+function makeRoster(count: number): Player[] {
+  const out: Player[] = [];
+
+  /* Names must be UNIQUE. The obvious formula — FIRST[i % 52] with
+     LAST[(i * 7 + 3) % 52] — silently repeats: 7 × 52 is a multiple of 52, so
+     player i and player i + 52 get the identical first AND last name. That put
+     the same person on the board twice (Elena Alves at #3 and #30), which reads
+     as broken data the moment anyone scrolls. The set below catches any
+     collision, whatever the formula. */
+  const taken = new Set<string>(PLAYERS.map((p) => p.name));
+
+  for (let i = 0; i < count; i++) {
+    let seed = (i + 1) * 2654435761;
+    const rand = () => {
+      seed ^= seed << 13;
+      seed ^= seed >>> 17;
+      seed ^= seed << 5;
+      seed >>>= 0;
+      return seed / 0xffffffff;
+    };
+
+    const first = FIRST[i % FIRST.length];
+
+    let last = "";
+    for (let k = 0; k < LAST.length; k++) {
+      const candidate = LAST[(i * 7 + 3 + k) % LAST.length];
+      if (!taken.has(`${first} ${candidate}`)) {
+        last = candidate;
+        break;
+      }
+    }
+    if (!last) continue; // every surname taken for this forename — skip, don't duplicate
+
+    const name = `${first} ${last}`;
+    taken.add(name);
+
+    /* About one in eight is still provisional, so the unrated tail on the board
+       is a real section rather than a token row. */
+    const unrated = i % 8 === 5;
+    const matches = unrated ? Math.floor(rand() * 5) : 6 + Math.floor(rand() * 40);
+    const wins = unrated
+      ? Math.floor(rand() * (matches + 1))
+      : Math.round(matches * (0.28 + rand() * 0.5));
+
+    // Ratings cluster in the middle of the scale, as a real club's do.
+    const base = 3.4 + rand() * 2.5;
+    const club = (i * 3) % CLUBS.length;
+
+    out.push({
+      id: `r${i}`,
+      name,
+      initials: (first[0] + last[0]).toUpperCase(),
+      singles: unrated ? null : Number(base.toFixed(3)),
+      doubles: unrated ? null : Number((base + (rand() - 0.45) * 0.4).toFixed(3)),
+      mixed: unrated || rand() < 0.35 ? null : Number((base + (rand() - 0.5) * 0.5).toFixed(3)),
+      matches,
+      wins,
+      reliability: unrated
+        ? Number((matches / RELIABILITY_THRESHOLD / 2).toFixed(2))
+        : Number(Math.min(0.98, 0.35 + matches / 45).toFixed(2)),
+      location: LOCATIONS[club],
+      club: CLUBS[club],
+    });
+  }
+
+  return out;
+}
+
+/** The hand-written players plus the generated field. This is what the board,
+    the player directory, and every lookup read from. */
+export const ROSTER: Player[] = [...PLAYERS, ...makeRoster(62)];
 
 /* ── A single player ──────────────────────────────────────────────────────── */
 
 export function getPlayer(id: string): Player | undefined {
-  return PLAYERS.find((p) => p.id === id);
+  return ROSTER.find((p) => p.id === id);
 }
 
 export function rankOf(id: string, discipline: Discipline): number | null {

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { PLAYERS, DISCIPLINES, fmt } from "@/lib/dubr";
+import { ROSTER, DISCIPLINES, fmt } from "@/lib/dubr";
 import { SearchIcon, PinIcon } from "@/components/icons";
 
 export default function Players() {
@@ -13,7 +13,7 @@ export default function Players() {
 
   const results = useMemo(() => {
     const term = q.trim().toLowerCase();
-    return PLAYERS.filter((p) => p.id !== "me")
+    return ROSTER.filter((p) => p.id !== "me")
       .filter((p) => !term || p.name.toLowerCase().includes(term))
       .filter((p) => {
         if (!nearMe) return true;
@@ -93,7 +93,7 @@ export default function Players() {
       )}
 
       <p className="footnote">
-        Showing {results.length} of {PLAYERS.length - 1} players.{" "}
+        Showing {results.length} of {ROSTER.length - 1} players.{" "}
         {results.some((p) => p.singles === null) &&
           "Unrated players show NR until they have logged 5 matches."}
       </p>

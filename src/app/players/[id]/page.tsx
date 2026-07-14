@@ -4,7 +4,7 @@ import { Trend } from "@/components/trend-chart";
 import { MatchCard } from "@/components/match-card";
 import { PinIcon, ChevronIcon, PlusIcon, MessageIcon } from "@/components/icons";
 import {
-  PLAYERS,
+  ROSTER,
   ME,
   DISCIPLINES,
   getPlayer,
@@ -19,7 +19,7 @@ import {
 
 /** Every player is a static route — the roster is known at build time. */
 export function generateStaticParams() {
-  return PLAYERS.map((p) => ({ id: p.id }));
+  return ROSTER.map((p) => ({ id: p.id }));
 }
 
 export default async function PlayerPage({ params }: { params: Promise<{ id: string }> }) {

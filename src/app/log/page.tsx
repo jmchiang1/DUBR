@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { PLAYERS, DISCIPLINES, type Discipline, ME, fmtDelta } from "@/lib/dubr";
+import { ROSTER, DISCIPLINES, type Discipline, ME, fmtDelta } from "@/lib/dubr";
 import { PlusIcon, ShuttleIcon } from "@/components/icons";
 import { Avatar } from "@/components/shell";
 
@@ -52,7 +52,7 @@ export default function LogMatch() {
   const oppRating = useMemo(() => {
     const rs = [opp1, opp2]
       .filter(Boolean)
-      .map((id) => PLAYERS.find((p) => p.id === id))
+      .map((id) => ROSTER.find((p) => p.id === id))
       .map((p) => (p ? (p[disc] ?? p.singles ?? 5) : 5));
     if (rs.length === 0) return null;
     return rs.reduce((a, b) => a + b, 0) / rs.length;
@@ -67,7 +67,7 @@ export default function LogMatch() {
     return won ? base + gap * 0.03 : -(base - gap * 0.03);
   }, [decided, oppRating, disc, won]);
 
-  const opponents = PLAYERS.filter((p) => p.id !== "me");
+  const opponents = ROSTER.filter((p) => p.id !== "me");
   const complete = decided && opp1 !== null && (!isDoubles || (partner !== null && opp2 !== null));
 
   return (
@@ -261,10 +261,10 @@ function PlayerSelect({
 }: {
   value: string | null;
   onChange: (v: string | null) => void;
-  options: typeof PLAYERS;
+  options: typeof ROSTER;
   placeholder: string;
 }) {
-  const selected = PLAYERS.find((p) => p.id === value);
+  const selected = ROSTER.find((p) => p.id === value);
 
   return (
     <div className="field">

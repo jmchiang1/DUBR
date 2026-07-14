@@ -1,18 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
-import { DISCIPLINES, type Discipline, leaderboard, provisional, fmt } from "@/lib/dubr";
+import { ChevronIcon } from "@/components/icons";
+import {
+  DISCIPLINES,
+  type Discipline,
+  board,
+  pageOf,
+  PAGE_SIZE,
+  fmt,
+} from "@/lib/dubr";
 
 export default function Rankings() {
   const [disc, setDisc] = useState<Discipline>("singles");
+  const [page, setPage] = useState(1);
 
-  const rated = leaderboard(disc);
-  const unrated = provisional(disc);
+  const rows = useMemo(() => board(disc), [disc]);
+  const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  const current = Math.min(page, pages);
+  const slice = rows.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
 
-  const top = rated[0][disc] as number;
-  const avg = rated.reduce((s, p) => s + (p[disc] as number), 0) / rated.length;
-  const totalMatches = [...rated, ...unrated].reduce((s, p) => s + p.matches, 0);
+  const ratedRows = rows.filter((r) => r.rank !== null);
+  const top = ratedRows[0]?.player[disc] as number;
+  const avg =
+    ratedRows.reduce((s, r) => s + (r.player[disc] as number), 0) / (ratedRows.length || 1);
+  const totalMatches = rows.reduce((s, r) => s + r.player.matches, 0);
+
+  const myPage = pageOf(rows, "me");
+  const onMyPage = current === myPage;
+
+  const go = (n: number) => {
+    setPage(Math.min(Math.max(1, n), pages));
+    /* A paginated list that leaves you at the bottom of the previous page makes
+       you scroll up to read the new one. */
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   return (
     <div className="stack--tight stack">
@@ -24,7 +47,10 @@ export default function Rankings() {
         {DISCIPLINES.map((d) => (
           <button
             key={d.id}
-            onClick={() => setDisc(d.id)}
+            onClick={() => {
+              setDisc(d.id);
+              setPage(1); // a player's rank differs per discipline; page 1 is the only safe landing
+            }}
             aria-pressed={d.id === disc}
             className={`tab ${d.id === disc ? "is-active" : ""}`}
           >
@@ -37,12 +63,16 @@ export default function Rankings() {
         className="card card--pad rise"
         style={{ animationDelay: "80ms", display: "grid", gridTemplateColumns: "repeat(3,1fr)" }}
       >
-        <Summary label="Top DUBR" value={top.toFixed(3)} />
+        <Summary label="Top DUBR" value={top?.toFixed(3) ?? "—"} />
         <Summary label="Average" value={avg.toFixed(3)} />
         <Summary label="Matches" value={String(totalMatches)} />
       </section>
 
-      {/* The board. Rows are rows — no medal emoji, no card per player. */}
+      {/* ── ONE table. Rated and unrated players together — an unrated player is
+             still a member of the club, and hiding them in a separate section
+             below the fold made them easy to miss. They are listed without a
+             rank, because a rank is a claim DUBR has not earned the right to
+             make about them yet. ─────────────────────────────────────────── */}
       <section className="card rise" style={{ animationDelay: "120ms", overflow: "hidden" }}>
         <div className="board__head">
           <div className="label board__rank">#</div>
@@ -54,30 +84,41 @@ export default function Rankings() {
         </div>
 
         <ul>
-          {rated.map((p, i) => {
+          {slice.map(({ player: p, rank }) => {
             const me = p.id === "me";
+            const rated = rank !== null;
             return (
               <li key={p.id}>
                 <Link href={`/players/${p.id}`} className={`board__row ${me ? "is-me" : ""}`}>
-                  <div className={`board__rank figure ${i < 3 ? "is-top" : ""}`}>{i + 1}</div>
+                  <div className={`board__rank figure ${rank !== null && rank <= 3 ? "is-top" : ""}`}>
+                    {rank ?? <span className="board__norank">—</span>}
+                  </div>
 
-                  <span className="avatar-initials avatar-initials--lg">{p.initials}</span>
+                  <span
+                    className={`avatar-initials avatar-initials--lg ${rated ? "" : "is-provisional"}`}
+                  >
+                    {p.initials}
+                  </span>
 
                   <div className="board__player">
-                    <div className="board__name">
+                    <div className={`board__name ${rated ? "" : "text-mute"}`}>
                       <span>{p.name}</span>
                       {me && <span className="badge-you label">You</span>}
                     </div>
                     <div className="board__sub">
-                      {p.matches} matches · {Math.round((p.wins / p.matches) * 100)}% W
+                      {rated
+                        ? `${p.matches} matches · ${Math.round((p.wins / p.matches) * 100)}% W`
+                        : `Unrated · ${p.matches} of 5 matches logged`}
                     </div>
                   </div>
 
                   <div className="board__record">
-                    {p.wins}–{p.matches - p.wins}
+                    {rated ? `${p.wins}–${p.matches - p.wins}` : ""}
                   </div>
 
-                  <div className="board__rating figure">{fmt(p[disc])}</div>
+                  <div className={`board__rating figure ${rated ? "" : "is-unrated"}`}>
+                    {fmt(p[disc])}
+                  </div>
                 </Link>
               </li>
             );
@@ -85,46 +126,78 @@ export default function Rankings() {
         </ul>
       </section>
 
-      {/* Provisional players are separated and honestly labelled. The old board
-          listed them at a default 5.500 / "Advanced" with 0% reliability, which
-          made every real rating above them look invented too. */}
-      {unrated.length > 0 && (
-        <section className="card rise" style={{ animationDelay: "160ms", overflow: "hidden" }}>
-          <div className="provisional__head">
-            <h2 className="display text-mute" style={{ fontSize: 12 }}>
-              Provisional
-            </h2>
-            <p className="provisional__note">
-              Not enough matches to place on the scale. These players are unrated — they are not
-              ranked, and they are not assigned a default.
-            </p>
-          </div>
+      {/* ── Pagination ─────────────────────────────────────────────────────── */}
+      <nav className="pager rise" aria-label="Rankings pages" style={{ animationDelay: "160ms" }}>
+        <span className="pager__count">
+          {(current - 1) * PAGE_SIZE + 1}–{Math.min(current * PAGE_SIZE, rows.length)} of{" "}
+          {rows.length}
+        </span>
 
-          <ul>
-            {unrated.map((p) => (
-              <li key={p.id}>
-                <Link href={`/players/${p.id}`} className="board__row">
-                  <div className="board__rank" />
-                  <span className="avatar-initials avatar-initials--lg is-provisional">
-                    {p.initials}
-                  </span>
-                  <div className="board__player">
-                    <div className="board__name text-mute">
-                      <span>{p.name}</span>
-                    </div>
-                    <div className="board__sub">{p.matches} of 5 matches logged</div>
-                  </div>
-                  {/* Spacer keeps NR aligned under the DUBR column above. */}
-                  <div className="board__record" />
-                  <div className="board__rating figure is-unrated">NR</div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+        <div className="pager__controls">
+          {/* A board you cannot find yourself on is a board you stop opening. */}
+          {!onMyPage && (
+            <button className="pager__me" onClick={() => go(myPage)}>
+              Find me
+            </button>
+          )}
+
+          <button
+            className="pager__btn"
+            onClick={() => go(current - 1)}
+            disabled={current === 1}
+            aria-label="Previous page"
+          >
+            <ChevronIcon />
+          </button>
+
+          {pageNumbers(current, pages).map((n, i) =>
+            n === null ? (
+              <span key={`gap${i}`} className="pager__gap">
+                …
+              </span>
+            ) : (
+              <button
+                key={n}
+                onClick={() => go(n)}
+                aria-current={n === current ? "page" : undefined}
+                className={`pager__btn ${n === current ? "is-active" : ""}`}
+              >
+                {n}
+              </button>
+            ),
+          )}
+
+          <button
+            className="pager__btn pager__btn--next"
+            onClick={() => go(current + 1)}
+            disabled={current === pages}
+            aria-label="Next page"
+          >
+            <ChevronIcon />
+          </button>
+        </div>
+      </nav>
     </div>
   );
+}
+
+/**
+ * Page numbers with an ellipsis, so the control stays a fixed width whether the
+ * board has 3 pages or 300. `null` is a gap.
+ */
+function pageNumbers(current: number, total: number): (number | null)[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+  const out: (number | null)[] = [1];
+  const from = Math.max(2, current - 1);
+  const to = Math.min(total - 1, current + 1);
+
+  if (from > 2) out.push(null);
+  for (let i = from; i <= to; i++) out.push(i);
+  if (to < total - 1) out.push(null);
+
+  out.push(total);
+  return out;
 }
 
 function Summary({ label, value }: { label: string; value: string }) {
