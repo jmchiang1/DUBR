@@ -97,7 +97,6 @@ export type Player = {
   /** 0..1 — how much the system trusts this rating. */
   reliability: number;
   location: string;
-  club?: string;
 };
 
 /**
@@ -156,7 +155,6 @@ export const ME: Player = {
   wins: 9,
   reliability: 0.72,
   location: "Queens County, NY",
-  club: "Kotofit LIC",
 };
 
 export const PLAYERS: Player[] = [
@@ -176,7 +174,6 @@ export const PLAYERS: Player[] = [
     wins: 33,
     reliability: 0.94,
     location: "Flushing, NY",
-    club: "Kotofit Flushing",
   },
   {
     id: "p2",
@@ -194,7 +191,6 @@ export const PLAYERS: Player[] = [
     wins: 20,
     reliability: 0.88,
     location: "Jersey City, NJ",
-    club: "Kotofit JC",
   },
   {
     id: "p3",
@@ -212,7 +208,6 @@ export const PLAYERS: Player[] = [
     wins: 15,
     reliability: 0.81,
     location: "Long Island City, NY",
-    club: "Kotofit LIC",
   },
   {
     id: "p4",
@@ -230,7 +225,6 @@ export const PLAYERS: Player[] = [
     wins: 10,
     reliability: 0.76,
     location: "Flushing, NY",
-    club: "Kotofit Flushing",
   },
   {
     id: "p5",
@@ -248,7 +242,6 @@ export const PLAYERS: Player[] = [
     wins: 6,
     reliability: 0.64,
     location: "Queens County, NY",
-    club: "Kotofit Flushing",
   },
   {
     id: "me",
@@ -266,7 +259,6 @@ export const PLAYERS: Player[] = [
     wins: 9,
     reliability: 0.72,
     location: "Queens County, NY",
-    club: "Kotofit LIC",
   },
   {
     id: "p6",
@@ -284,7 +276,6 @@ export const PLAYERS: Player[] = [
     wins: 11,
     reliability: 0.79,
     location: "Jersey City, NJ",
-    club: "Kotofit JC",
   },
   {
     id: "p7",
@@ -302,7 +293,6 @@ export const PLAYERS: Player[] = [
     wins: 4,
     reliability: 0.55,
     location: "Flushing, NY",
-    club: "Kotofit Flushing",
   },
   {
     id: "p8",
@@ -320,7 +310,6 @@ export const PLAYERS: Player[] = [
     wins: 2,
     reliability: 0.42,
     location: "Long Island City, NY",
-    club: "Kotofit LIC",
   },
   {
     id: "p9",
@@ -658,6 +647,10 @@ export const AGE_CEIL = 80;
 export type PlayerFilters = {
   /** Free-text name search. */
   q: string;
+  /** Free text, matched as a case-insensitive SUBSTRING of the player's location.
+      "" = anywhere. Substring rather than equality because "queens" and "ny" are
+      real things to type and neither is the whole of any location string. */
+  location: string;
   /** Miles. 0 = no limit, which is the DEFAULT — a distance filter you did not
       ask for silently hiding half the club is the worst kind of default. */
   distance: number;
@@ -682,6 +675,7 @@ export type PlayerFilters = {
 
 export const DEFAULT_FILTERS: PlayerFilters = {
   q: "",
+  location: "",
   distance: 0,
   gender: "any",
   formats: ["singles", "doubles"],
@@ -700,10 +694,12 @@ function ratingsFor(p: Player, formats: Format[]): (number | null)[] {
 
 export function filterRoster(f: PlayerFilters, roster: Player[] = ROSTER): Player[] {
   const term = f.q.trim().toLowerCase();
+  const place = f.location.trim().toLowerCase();
 
   return roster.filter((p) => {
     if (p.id === "me") return false;
     if (term && !p.name.toLowerCase().includes(term)) return false;
+    if (place && !p.location.toLowerCase().includes(place)) return false;
     if (f.distance > 0 && p.distance > f.distance) return false;
     if (f.gender !== "any" && p.gender !== f.gender) return false;
     if (!f.formats.some((x) => p.plays.includes(x))) return false;
@@ -729,6 +725,7 @@ export function filterRoster(f: PlayerFilters, roster: Player[] = ROSTER): Playe
     decide whether "Reset" has anything to do. */
 export function activeFilterCount(f: PlayerFilters): number {
   let n = 0;
+  if (f.location.trim()) n++;
   if (f.distance > 0) n++;
   if (f.gender !== "any") n++;
   if (f.formats.length !== 2) n++;
@@ -811,10 +808,17 @@ const LAST = [
   "Petrov", "Aslan",
 ];
 
-const CLUBS = ["Kotofit LIC", "Kotofit Flushing", "Kotofit JC"];
+/**
+ * Where players are, and roughly how far that is from you.
+ *
+ * A player has a LOCATION and nothing else. There used to be a club on the bio
+ * too, but which facility somebody prefers to book is not who they are — it is a
+ * fact about a building. Location is what tells you whether a game is reachable,
+ * and it is the only one of the two that the directory can act on.
+ */
 const LOCATIONS = ["Long Island City, NY", "Flushing, NY", "Jersey City, NJ"];
-/** Rough miles from the account holder, per club. Parallel to CLUBS. */
-const CLUB_MILES = [1.5, 6, 11];
+/** Rough miles from the account holder. Parallel to LOCATIONS. */
+const LOCATION_MILES = [1.5, 6, 11];
 
 function makeRoster(count: number): Player[] {
   const out: Player[] = [];
@@ -862,12 +866,16 @@ function makeRoster(count: number): Player[] {
 
     // Ratings cluster in the middle of the scale, as a real club's do.
     const base = 3.4 + rand() * 2.5;
-    const club = (i * 3) % CLUBS.length;
+    /* `(i * 3) % 3` — which is what this was, inherited from the club formula —
+       is ZERO for every i, so the entire generated roster lived in Long Island
+       City and the location filter had exactly one populated option. Step by 1. */
+    const area = i % LOCATIONS.length;
 
-    /* Distance is anchored to the CLUB, not rolled independently: everybody at
-       Kotofit LIC is genuinely near you and everybody at Jersey City genuinely is
-       not, so filtering by distance and filtering by club agree with each other. */
-    const distance = Number((CLUB_MILES[club] + rand() * 5).toFixed(1));
+    /* Distance is anchored to the LOCATION, not rolled independently: everybody
+       in Long Island City is genuinely near you and everybody in Jersey City
+       genuinely is not, so the distance filter and the location filter agree with
+       each other instead of contradicting each other. */
+    const distance = Number((LOCATION_MILES[area] + rand() * 5).toFixed(1));
 
     /* Ages skew young, with a real tail. A flat 18–80 roll would put as many
        70-year-olds on the board as 25-year-olds, and the age filter would then
@@ -900,8 +908,7 @@ function makeRoster(count: number): Player[] {
       reliability: unrated
         ? Number((matches / RELIABILITY_THRESHOLD / 2).toFixed(2))
         : Number(Math.min(0.98, 0.35 + matches / 45).toFixed(2)),
-      location: LOCATIONS[club],
-      club: CLUBS[club],
+      location: LOCATIONS[area],
     });
   }
 
@@ -911,6 +918,16 @@ function makeRoster(count: number): Player[] {
 /** The hand-written players plus the generated field. This is what the board,
     the player directory, and every lookup read from. */
 export const ROSTER: Player[] = [...PLAYERS, ...makeRoster(62)];
+
+/**
+ * Every location that somebody on the roster is actually in, alphabetical.
+ *
+ * DERIVED from the roster rather than hand-listed beside it. A hand-written list
+ * is a second source of truth that drifts the moment a player moves: you get an
+ * option in the dropdown that matches nobody, or a player in a place the dropdown
+ * cannot name. Neither is possible if the options ARE the data.
+ */
+export const LOCATION_OPTIONS: string[] = [...new Set(ROSTER.map((p) => p.location))].sort();
 
 /* ── A single player ──────────────────────────────────────────────────────── */
 

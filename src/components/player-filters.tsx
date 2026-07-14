@@ -6,6 +6,7 @@ import {
   DAYS,
   DEFAULT_FILTERS,
   DISTANCE_MAX,
+  LOCATION_OPTIONS,
   RATING_CEIL,
   RATING_FLOOR,
   type Day,
@@ -13,6 +14,7 @@ import {
   type Gender,
   type PlayerFilters,
 } from "@/lib/dubr";
+import { CloseIcon, PinIcon } from "@/components/icons";
 
 /**
  * The player filter.
@@ -65,6 +67,46 @@ export function Filters({
           Reset
         </button>
       </div>
+
+      {/* ── LOCATION ─────────────────────────────────────────────────────
+          A free box, not a dropdown. A dropdown can only offer the places that
+          happen to be on today's roster — it cannot answer "Queens", which is a
+          real thing to type and which no single option spells. So this MATCHES on
+          a substring: "queens" finds Queens County, "ny" finds every borough.
+
+          The datalist still offers the exact locations as suggestions, so the
+          convenience of the dropdown survives without its ceiling.
+
+          Location and distance compose rather than compete: one names a place, the
+          other draws a radius, and asking for both is legal, if narrow. */}
+      <fieldset className="filters__group">
+        <legend className="label">Location</legend>
+        <div className="field" style={{ marginTop: 8 }}>
+          <PinIcon />
+          <input
+            className="field__input"
+            list="dubr-locations"
+            value={f.location}
+            onChange={(e) => set("location", e.target.value)}
+            placeholder="Anywhere"
+            aria-label="Location"
+          />
+          {f.location && (
+            <button
+              className="field__clear"
+              onClick={() => set("location", "")}
+              aria-label="Clear location"
+            >
+              <CloseIcon />
+            </button>
+          )}
+        </div>
+        <datalist id="dubr-locations">
+          {LOCATION_OPTIONS.map((loc) => (
+            <option key={loc} value={loc} />
+          ))}
+        </datalist>
+      </fieldset>
 
       {/* ── DISTANCE ─────────────────────────────────────────────────────── */}
       <fieldset className="filters__group">
@@ -183,7 +225,7 @@ export function Filters({
           is no use to you if they only play Sundays and you only play weeknights. */}
       <fieldset className="filters__group">
         <legend className="label">Free to play</legend>
-        <div className="days">
+        <div className="days days--compact">
           {DAYS.map((d) => (
             <button
               key={d}

@@ -174,7 +174,7 @@ export function ProfileEditor({ onDone }: { onDone: () => void }) {
           ))}
         </div>
         <p className="editor__hint">
-          This is what Open Play and “find me a game” read. Leave it empty and you will not be
+          This is what Events and “find me a game” read. Leave it empty and you will not be
           suggested to anyone.
         </p>
       </div>

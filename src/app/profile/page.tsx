@@ -59,7 +59,7 @@ export default function Profile() {
         </div>
 
         <div className="profile__social">
-          <span className="session__spots">{level.name}</span>
+          <span className="level-pill">{level.name}</span>
           <button className="btn btn--ghost btn--sm" onClick={() => setEditing(true)}>
             <PencilIcon />
             Edit profile

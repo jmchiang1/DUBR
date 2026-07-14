@@ -9,7 +9,6 @@ import {
   CalendarIcon,
   MessageIcon,
   PlusIcon,
-  SearchIcon,
 } from "./icons";
 import { useMessages } from "./messages-store";
 import { useProfile } from "./profile-store";
@@ -30,7 +29,7 @@ const NAV: NavItem[] = [
   { href: "/", label: "Home", Icon: HomeIcon },
   { href: "/rankings", label: "Rankings", Icon: RankIcon },
   { href: "/players", label: "Players", Icon: PlayersIcon },
-  { href: "/play", label: "Open Play", Icon: CalendarIcon },
+  { href: "/events", label: "Events", Icon: CalendarIcon },
   { href: "/messages", label: "Messages", Icon: MessageIcon },
 ];
 
@@ -62,16 +61,17 @@ export function Avatar({ className = "avatar" }: { className?: string }) {
 export function Shell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   /**
-   * A nav item is active on its own route and anything BELOW it — /play lights up
-   * for /play/tuesday-lic. It must match on the path SEGMENT, not the string: a
-   * bare `startsWith("/play")` also matches "/players", which lit Open Play up
-   * every time you were on the Players page.
+   * A nav item is active on its own route and anything BELOW it — /events lights
+   * up for /events/empire-state-open. It must match on the path SEGMENT, not the
+   * string: a bare `startsWith(href)` would also let "/player" match "/players".
    */
   const isActive = (href: string) =>
     href === "/" ? path === "/" : path === href || path.startsWith(`${href}/`);
   /* Read from the same store /messages writes to, so the badge cannot go on
      claiming unread messages you are in the middle of reading. */
   const { unread } = useMessages();
+  /* The rail prints your name, so it needs the profile the editor writes to. */
+  const { profile } = useProfile();
 
   return (
     <div className="app">
@@ -107,23 +107,30 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <PlusIcon />
           Log a match
         </Link>
+
+        {/* You, at the foot of the rail. It is pushed there by margin-top:auto
+            rather than by a spacer, so it sits on the bottom edge whatever the nav
+            above it grows to. */}
+        <Link
+          href="/profile"
+          aria-current={isActive("/profile") ? "page" : undefined}
+          className={`rail-me ${isActive("/profile") ? "is-active" : ""}`}
+        >
+          <Avatar className="avatar avatar--sm" />
+          <span className="rail-me__name">{profile.name}</span>
+        </Link>
       </aside>
 
       <div className="main">
+        {/* Mobile only. The desktop top bar is gone — it held a wordmark the rail
+            already prints, a search box, and your avatar, which now lives at the
+            foot of the rail. On mobile there IS no rail, so this is the only place
+            the mark and the way to your profile can be. */}
         <header className="topbar">
           <div className="topbar__inner">
             <Link href="/" className="topbar__brand display">
               DUBR
             </Link>
-
-            <div className="search">
-              <SearchIcon className="search__icon" />
-              <input
-                className="search__input"
-                placeholder="Search players, clubs, events"
-                aria-label="Search"
-              />
-            </div>
 
             <Link href="/profile" aria-label="Profile" className="topbar__avatar">
               <Avatar />

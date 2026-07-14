@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronIcon } from "@/components/icons";
+import { ChevronIcon, SearchIcon } from "@/components/icons";
 import {
   DISCIPLINES,
   type Discipline,
@@ -15,17 +15,30 @@ import {
 export default function Rankings() {
   const [disc, setDisc] = useState<Discipline>("singles");
   const [page, setPage] = useState(1);
+  const [q, setQ] = useState("");
 
-  const rows = useMemo(() => board(disc), [disc]);
+  const all = useMemo(() => board(disc), [disc]);
+
+  /* Search NARROWS the board, it does not re-rank it: every row keeps the rank it
+     holds on the FULL board, so searching your own name shows you at #31, not at
+     #1 of a list of one. A rank that changes with the query is not a rank. */
+  const rows = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return term ? all.filter((r) => r.player.name.toLowerCase().includes(term)) : all;
+  }, [all, q]);
+
   const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
   const current = Math.min(page, pages);
   const slice = rows.slice((current - 1) * PAGE_SIZE, current * PAGE_SIZE);
 
-  const ratedRows = rows.filter((r) => r.rank !== null);
+  /* The summary is a fact about the BOARD, not about your query — it reads from
+     `all`. Computed from the filtered rows, "Top DUBR" would mean "the best of the
+     three people whose name contains 'zh'", which is not a statistic. */
+  const ratedRows = all.filter((r) => r.rank !== null);
   const top = ratedRows[0]?.player[disc] as number;
   const avg =
     ratedRows.reduce((s, r) => s + (r.player[disc] as number), 0) / (ratedRows.length || 1);
-  const totalMatches = rows.reduce((s, r) => s + r.player.matches, 0);
+  const totalMatches = all.reduce((s, r) => s + r.player.matches, 0);
 
   const myPage = pageOf(rows, "me");
   const onMyPage = current === myPage;
@@ -42,6 +55,20 @@ export default function Rankings() {
       <header className="page-head rise">
         <h1 className="page-title display">Rankings</h1>
       </header>
+
+      <div className="searchbar rise" style={{ maxWidth: 520 }}>
+        <SearchIcon className="search__icon" />
+        <input
+          className="search__input"
+          value={q}
+          onChange={(e) => {
+            setQ(e.target.value);
+            setPage(1); // the result of a new query is never on page 4 of the old one
+          }}
+          placeholder="Search the board"
+          aria-label="Search the board"
+        />
+      </div>
 
       <div className="tabs rise" style={{ animationDelay: "40ms" }}>
         {DISCIPLINES.map((d) => (

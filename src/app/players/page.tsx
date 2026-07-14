@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  ROSTER,
   DISCIPLINES,
   DEFAULT_FILTERS,
   activeFilterCount,
@@ -29,7 +28,7 @@ export default function Players() {
         <h1 className="page-title display">Players</h1>
       </header>
 
-      <div className="row rise">
+      <div className="row rise" style={{ maxWidth: 520 }}>
         <div className="searchbar">
           <SearchIcon className="search__icon" />
           <input
@@ -63,7 +62,10 @@ export default function Players() {
               No players match. {active > 0 && "Try widening a filter."}
             </p>
           ) : (
-            <ul className="grid-cards rise" style={{ animationDelay: "80ms" }}>
+            /* One column, always. Two side by side turned a directory you SCAN
+               into a grid you have to read in a zigzag, and at this row height the
+               second column bought nothing but that. */
+            <ul className="player-list rise" style={{ animationDelay: "80ms" }}>
               {results.map((p) => (
                 <li key={p.id}>
                   <Link href={`/players/${p.id}`} className="card player-card">
@@ -79,11 +81,11 @@ export default function Players() {
                       <div className="player-card__name">{p.name}</div>
                       <div className="player-card__meta">
                         <PinIcon />
-                        {/* Distance, not just the club name: it is the thing the
-                            filter above is now asking about, so it is the thing
-                            the row has to be able to answer for. */}
+                        {/* Where they are and how far that is — the two things the
+                            filter above actually asks about, so the two things the
+                            row has to be able to answer for. */}
                         <span>
-                          {p.club ?? p.location} · {p.distance} mi
+                          {p.location} · {p.distance} mi
                         </span>
                       </div>
                     </div>
@@ -109,11 +111,11 @@ export default function Players() {
             </ul>
           )}
 
-          <p className="footnote">
+          {/* <p className="footnote">
             Showing {results.length} of {ROSTER.length - 1} players.{" "}
             {results.some((p) => p.singles === null) &&
               "Unrated players show NR until they have logged 5 matches."}
-          </p>
+          </p> */}
         </div>
       </div>
     </div>

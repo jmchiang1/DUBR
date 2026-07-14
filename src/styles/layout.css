@@ -133,9 +133,48 @@
   }
 }
 
-/* ── Top bar ──────────────────────────────────────────────────────────────
-   On desktop it is transparent and its controls float as their own objects. A
-   translucent white bar over the cobalt canvas just reads as a lavender smear. */
+/* ── You, at the foot of the rail ─────────────────────────────────────────
+   Pushed to the bottom edge by margin-top:auto — not by a fixed spacer, which
+   would drift the moment the nav gains an item. */
+.rail-me {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  margin-top: auto;
+  padding: var(--gap-sm);
+  border-radius: var(--radius-sm);
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.rail-me:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.rail-me.is-active {
+  background: var(--surface);
+}
+
+.rail-me__name {
+  font-size: 13px;
+  color: var(--mute);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rail-me:hover .rail-me__name,
+.rail-me.is-active .rail-me__name {
+  color: var(--bone);
+}
+
+/* ── Top bar (MOBILE ONLY) ────────────────────────────────────────────────
+   It is gone from desktop entirely. What it held is now elsewhere: the wordmark
+   is on the rail, your avatar is at the foot of the rail, and the global search
+   is retired — every page that has something to search now searches ITSELF, in
+   its own header, where the results actually are. Below 1024px there is no rail,
+   so this bar survives as the only place the mark and your profile can live. */
 .topbar {
   position: sticky;
   top: 0;
@@ -147,11 +186,7 @@
 
 @media (min-width: 1024px) {
   .topbar {
-    position: static;
-    border-bottom: 0;
-    background: none;
-    backdrop-filter: none;
-    margin-bottom: var(--gap-lg);
+    display: none;
   }
 }
 
@@ -163,13 +198,6 @@
   padding: 0 var(--pad-page);
 }
 
-@media (min-width: 1024px) {
-  .topbar__inner {
-    height: auto;
-    padding: 0;
-  }
-}
-
 /* The mobile bar is 56px tall, so the wordmark cannot be the full 64px here —
    it would not fit its own header. It scales down instead. */
 .topbar__brand {
@@ -177,29 +205,12 @@
   font-weight: 700;
 }
 
-@media (min-width: 1024px) {
-  .topbar__brand {
-    display: none;
-  }
+.topbar__avatar {
+  margin-left: auto;
 }
 
-.search {
-  display: none;
-}
-
-@media (min-width: 1024px) {
-  .search {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: 1;
-    max-width: 420px;
-    padding: 0 var(--gap);
-    border-radius: var(--radius-sm);
-    background: var(--surface);
-  }
-}
-
+/* The search FIELD is still a component — the players, rankings, and events pages
+   each own one now. Only the global bar in the chrome is gone. */
 .search__icon {
   width: 16px;
   height: 16px;
@@ -216,10 +227,6 @@
 
 .search__input::placeholder {
   color: var(--faint);
-}
-
-.topbar__avatar {
-  margin-left: auto;
 }
 
 /* ── Bottom tab bar (mobile only) ─────────────────────────────────────────── */

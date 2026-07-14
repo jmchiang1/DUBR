@@ -35,7 +35,11 @@ export type Profile = {
 const DEFAULTS: Profile = {
   name: ME.name,
   location: ME.location,
-  club: ME.club ?? "No club",
+  /* A club is no longer part of a PLAYER — a facility is a fact about a building,
+     not about a person, so it came off every player bio. It survives here as one
+     of YOUR OWN settings, which is a different thing: a preference you set, not a
+     label the directory hangs on you. Nobody else's club is shown anywhere. */
+  club: CLUBS[0],
   hand: "Right",
   availability: ["Tue", "Thu", "Sat"],
   avatar: "/avatar.jpg",

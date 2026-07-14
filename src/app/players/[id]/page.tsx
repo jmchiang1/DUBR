@@ -55,21 +55,19 @@ export default async function PlayerPage({ params }: { params: Promise<{ id: str
 
           <div style={{ minWidth: 0 }}>
             <h1 className="profile__name display">{player.name}</h1>
+            {/* Location, and nothing else. Which facility somebody prefers to
+                book is a fact about a building, not about them. */}
             <div className="profile__meta">
               <PinIcon />
               <span>{player.location}</span>
-              {player.club && (
-                <>
-                  <span className="text-faint">·</span>
-                  <span>{player.club}</span>
-                </>
-              )}
+              <span className="text-faint">·</span>
+              <span>{player.distance} mi away</span>
             </div>
           </div>
         </div>
 
         <div className="profile__social">
-          {rated && <span className="session__spots">{level!.name}</span>}
+          {rated && <span className="level-pill">{level!.name}</span>}
           {!isMe && (
             <div className="row" style={{ gap: 8 }}>
               <Link href="/messages" className="btn btn--ghost btn--sm">

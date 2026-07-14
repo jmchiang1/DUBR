@@ -1102,8 +1102,14 @@
   border-radius: var(--radius-sm);
 }
 
+/* Every chip is the SAME WIDTH, whatever is in it. Sized to content, "5.60" and
+   "NR" come out different widths, so the three-chip block was a different size on
+   every row and its right edge wandered down the list. A rating is a column, and a
+   column has one width. 46px is "8.88" at 12px tabular plus its padding — the
+   widest a rating can ever be. */
 .chip {
-  padding: 6px var(--gap-sm);
+  flex: 0 0 46px;
+  padding: 6px 0;
   background: var(--elevated);
   text-align: center;
 }
@@ -1111,6 +1117,9 @@
 .chip__value {
   margin-top: 4px;
   font-size: 12px;
+  /* Proportional digits make 5.11 narrower than 5.00 — inside a fixed chip that
+     shows up as the number wobbling as you scan down the column. */
+  font-variant-numeric: tabular-nums;
 }
 
 .chip__value.is-unrated {
@@ -1252,37 +1261,9 @@
   flex-shrink: 0;
 }
 
-/* ── Open play ────────────────────────────────────────────────────────────── */
-
-.session__top {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--gap);
-  padding: var(--gap-md) var(--gap-md) var(--gap);
-}
-
-.session__day {
-  display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-sm);
-  background: var(--elevated);
-  font-size: 13px;
-}
-
-.session__body {
-  flex: 1;
-  min-width: 0;
-}
-
-.session__venue {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.session__spots {
+/* A player's level, worn as a badge. (Was .session__spots, which was a lie the
+   moment the profile started using it.) */
+.level-pill {
   flex-shrink: 0;
   padding: 4px var(--gap-sm);
   border-radius: var(--radius-sm);
@@ -1292,34 +1273,151 @@
   color: var(--aqua);
 }
 
-.session__spots.is-full {
-  background: var(--elevated);
-  color: var(--faint);
-}
-
-.facts {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  border-top: 1px solid var(--line);
-}
-
-.fact {
-  padding: var(--gap) var(--gap);
-  border-right: 1px solid var(--line);
-}
-
-.fact:last-child {
-  border-right: 0;
-}
-
+/* Used by the profile's Mini stat. */
 .fact__value {
   margin-top: 6px;
   font-size: 12px;
 }
 
-.session__action {
-  padding: var(--gap);
+/* ── Events ───────────────────────────────────────────────────────────────
+   DUBR is a universal rating, so an event is hosted by an INDEPENDENT venue —
+   a club in Milpitas, a college league in Boston — not by us. The card is built
+   around naming that host. */
+
+.event {
+  display: flex;
+  flex-direction: column;
+  padding: var(--gap-md);
+}
+
+.event__top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: var(--gap);
+}
+
+/* The kind of event, colour-coded. This is the one place a second colour family
+   is allowed: it is a taxonomy, not a value judgement, so it cannot borrow the
+   aqua/red axis, which means up and down. */
+.event__kind {
+  padding: 3px var(--gap-sm);
+  border-radius: var(--radius-pill);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.event__kind.is-open-play {
+  background: rgba(0, 229, 192, 0.18);
+  color: var(--aqua);
+}
+
+.event__kind.is-tournament {
+  background: rgba(255, 196, 61, 0.18);
+  color: #ffc43d;
+}
+
+.event__kind.is-league {
+  background: rgba(140, 160, 255, 0.2);
+  color: #a9b8ff;
+}
+
+.event__kind.is-clinic {
+  background: rgba(255, 255, 255, 0.14);
+  color: var(--mute);
+}
+
+/* An event that does not move your rating says so. A player who assumes a
+   clinic counted has been misled by the silence. */
+.event__unrated {
+  padding: 3px var(--gap-sm);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.event__name {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+/* The host, given real weight — it is the argument the page is making. */
+.event__host {
+  margin-top: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--aqua);
+}
+
+.event__meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: var(--gap-sm);
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.event__meta svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+  color: var(--faint);
+}
+
+.event__facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--gap-sm);
+  margin-top: var(--gap-md);
+  padding: var(--gap) 0;
   border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.event__fact {
+  min-width: 0;
+}
+
+.event__fact-value {
+  margin-top: 6px;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Your rating is outside this event's band — the number itself carries the
+   warning, rather than a separate line of apology text. */
+.event__fact-value.is-warn {
+  color: var(--loss);
+}
+
+.event__foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+  /* Pushes the action to the bottom, so cards of different heights in the grid
+     still line their buttons up. */
+  margin-top: auto;
+  padding-top: var(--gap-md);
+}
+
+.event__spots {
+  font-size: 12px;
+  color: var(--mute);
+}
+
+.event__spots.is-full {
+  color: var(--faint);
 }
 
 /* Sparkline beside the 90-day figure on the profile. */
@@ -1587,6 +1685,418 @@
   background: var(--aqua);
   border-color: var(--aqua);
   color: var(--on-aqua);
+}
+
+/* ── The player directory ─────────────────────────────────────────────────
+   Filters in a column beside the results on desktop. Below 1024px they collapse
+   into a sheet that opens from the Filters button — the results are what you came
+   for, and a screenful of controls above them buries the answer. */
+
+.directory {
+  display: grid;
+  gap: var(--gap-md);
+}
+
+@media (min-width: 1024px) {
+  .directory {
+    grid-template-columns: 260px minmax(0, 1fr);
+    gap: var(--gap-lg);
+    align-items: start;
+  }
+  .directory__panel {
+    position: sticky;
+    /* Clears nothing above it up here, so it just needs to breathe. */
+    top: var(--gap-md);
+  }
+}
+
+.directory__results {
+  min-width: 0;
+}
+
+@media (max-width: 1023px) {
+  .directory__panel {
+    display: none;
+  }
+  .directory.is-open .directory__panel {
+    display: block;
+  }
+}
+
+/* The Filters button only exists on mobile; the panel is always open above it. */
+@media (min-width: 1024px) {
+  .filters__toggle {
+    display: none;
+  }
+}
+
+.filter-btn__count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 16px;
+  height: 16px;
+  margin-left: 6px;
+  padding: 0 4px;
+  border-radius: var(--radius-pill);
+  background: var(--on-aqua);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--aqua);
+}
+
+/* ── The filter panel ─────────────────────────────────────────────────────── */
+
+.filters {
+  padding: var(--gap-md);
+}
+
+.filters__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gap);
+  margin-bottom: var(--gap-md);
+}
+
+.filters__title {
+  font-size: 15px;
+}
+
+.filters__reset {
+  font-size: 12px;
+  color: var(--mute);
+  transition: color 0.15s;
+}
+
+.filters__reset:hover:not(:disabled) {
+  color: var(--bone);
+}
+
+/* Nothing to reset is not an error, so it is not shouted about — the control
+   just goes quiet. */
+.filters__reset:disabled {
+  color: var(--faint);
+  opacity: 0.5;
+  cursor: default;
+}
+
+.filters__group {
+  padding: var(--gap-md) 0;
+  border-top: 1px solid var(--line);
+}
+
+.filters__group--last {
+  padding-bottom: 0;
+}
+
+.filters__legend {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+  width: 100%;
+}
+
+.filters__value {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bone);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.filters__ends,
+.filters__ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--gap-sm);
+  font-size: 11px;
+  color: var(--faint);
+}
+
+.filters__ticks {
+  /* Seven numbers over the 2–8 scale, each sitting under its own step. */
+  margin-top: 6px;
+}
+
+.filters__warn {
+  margin-top: var(--gap-sm);
+  font-size: 11px;
+  color: var(--loss);
+}
+
+.filters__note {
+  margin-top: 6px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--faint);
+}
+
+/* ── Sliders ──────────────────────────────────────────────────────────────
+   One track style for both the single slider and the two-thumb one, so a range
+   and a limit read as the same instrument. */
+
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 4px;
+  margin-top: var(--gap);
+  border-radius: var(--radius-pill);
+  /* The filled part is the part you have SELECTED, so it is aqua up to the thumb
+     and inert after it. */
+  background: linear-gradient(
+    to right,
+    var(--aqua) 0 var(--fill, 0%),
+    var(--line-strong) var(--fill, 0%) 100%
+  );
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb,
+.range2__input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--aqua);
+  box-shadow: 0 1px 4px rgba(0, 12, 67, 0.4);
+  cursor: grab;
+  pointer-events: auto;
+}
+
+.slider::-moz-range-thumb,
+.range2__input::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--aqua);
+  box-shadow: 0 1px 4px rgba(0, 12, 67, 0.4);
+  cursor: grab;
+  pointer-events: auto;
+}
+
+.slider:focus-visible,
+.range2__input:focus-visible {
+  outline: 2px solid var(--bone);
+  outline-offset: 4px;
+}
+
+/* Two natives stacked on one track. The inputs themselves are invisible and take
+   no pointer — only their thumbs do (above) — which is what makes both thumbs
+   grabbable at the point where they overlap. */
+.range2 {
+  position: relative;
+  height: 16px;
+  margin-top: var(--gap);
+}
+
+.range2__track,
+.range2__fill {
+  position: absolute;
+  top: 50%;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.range2__track {
+  left: 0;
+  right: 0;
+  background: var(--line-strong);
+}
+
+.range2__fill {
+  left: var(--lo);
+  right: calc(100% - var(--hi));
+  background: var(--aqua);
+}
+
+.range2__input {
+  -webkit-appearance: none;
+  appearance: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 16px;
+  margin: 0;
+  background: none;
+  pointer-events: none;
+}
+
+/* ── Segmented control (Anybody / Men / Women) ────────────────────────────── */
+
+.segmented {
+  display: flex;
+  margin-top: var(--gap-sm);
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+}
+
+.segmented__btn {
+  flex: 1;
+  padding: 6px 4px;
+  border-radius: var(--radius-pill);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--mute);
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.segmented__btn:hover {
+  color: var(--bone);
+}
+
+.segmented__btn.is-active {
+  background: var(--elevated);
+  color: var(--bone);
+  font-weight: 600;
+}
+
+/* ── Checkbox ─────────────────────────────────────────────────────────────
+   The native input stays in the DOM and keeps the keyboard and the screen
+   reader; it is just moved off-screen and drawn as the box beside it. */
+
+.checks {
+  display: flex;
+  gap: var(--gap-md);
+  margin-top: var(--gap-sm);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  font-size: 13px;
+  color: var(--mute);
+  cursor: pointer;
+}
+
+.check input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.check__box {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 5px;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.check input:checked + .check__box {
+  border-color: var(--aqua);
+  background: var(--aqua);
+}
+
+/* The tick is drawn, not a glyph — a ✓ character renders differently on every
+   platform and at 18px that difference is the whole control. */
+.check input:checked + .check__box::after {
+  content: "";
+  width: 9px;
+  height: 5px;
+  border: 2px solid var(--on-aqua);
+  border-top: 0;
+  border-right: 0;
+  transform: translateY(-1px) rotate(-45deg);
+}
+
+.check input:focus-visible + .check__box {
+  outline: 2px solid var(--bone);
+  outline-offset: 2px;
+}
+
+.check:hover {
+  color: var(--bone);
+}
+
+/* One vertical list, at every width. The directory is SCANNED — you run your eye
+   down the names — and a second column turns that into a zigzag for no gain at
+   this row height. */
+.player-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+
+.player-list > li {
+  min-width: 0;
+}
+
+/* A free text box inside a .field. Same shell as .field__select, so the location
+   box and the log-a-match selects read as one family of control. */
+.field__input {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 0;
+  font-size: 13px;
+  color: var(--bone);
+  outline: none;
+}
+
+.field__input::placeholder {
+  color: var(--faint);
+}
+
+/* Only rendered when there is something to clear — a permanently visible × on an
+   empty box is a control that does nothing. */
+.field__clear {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-pill);
+  color: var(--faint);
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.field__clear:hover {
+  background: var(--elevated);
+  color: var(--bone);
+}
+
+.field__clear svg {
+  width: 12px;
+  height: 12px;
+}
+
+/* ── Day toggles, compact ─────────────────────────────────────────────────
+   The same .days / .day control the profile editor uses — a day you are free is
+   a day you are free, and it should not be two different objects. The panel is
+   only 260px wide, though, so this variant drops the 44px floor and the labels to
+   a single letter, which is what lets all seven sit on one row. */
+
+.days--compact {
+  flex-wrap: nowrap;
+  gap: 4px;
+  margin-top: var(--gap-sm);
+}
+
+.days--compact .day {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 0;
+  font-size: 11px;
+  text-align: center;
 }
 
 .empty {

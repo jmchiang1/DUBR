@@ -122,6 +122,12 @@ export const SendIcon = (p: P) => (
   </S>
 );
 
+export const CloseIcon = (p: P) => (
+  <S {...p}>
+    <path d="M6 6l12 12M18 6 6 18" />
+  </S>
+);
+
 export const PencilIcon = (p: P) => (
   <S {...p}>
     <path d="M4 20h4L20 8a2.8 2.8 0 0 0-4-4L4 16v4Z" />
