@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { ME, ME_BIRTHDAY, type Gender } from "@/lib/dubr";
+import { DEFAULT_AVATAR } from "@/lib/asset";
 
 /**
  * The player's own profile, shared by the rail, the home header, and /profile.
@@ -43,7 +44,7 @@ const DEFAULTS: Profile = {
   birthday: ME_BIRTHDAY,
   gender: ME.gender,
   phone: "",
-  avatar: "/avatar.jpg",
+  avatar: DEFAULT_AVATAR,
 };
 
 const KEY = "dubr.profile";

@@ -4,14 +4,14 @@
 
 /* Futura is self-hosted and ships a single weight, so every display size renders
    Heavy no matter what font-weight we ask for. Never use weight for hierarchy in
-   display type — use size, tracking, and color. */
-@font-face {
-  font-family: "Futura Display";
-  src: url("/fonts/futura-heavy.otf") format("opentype");
-  font-weight: 400 900;
-  font-style: normal;
-  font-display: swap;
-}
+   display type — use size, tracking, and color.
+
+   The @font-face lives in layout.tsx now, via next/font/local, NOT here. A hard
+   url("/fonts/…") in a stylesheet is the one asset path nothing rewrites: under
+   GitHub Pages the app is served from /DUBR, and that URL would ask the domain
+   root for a file that is not there. next/font hashes the file into the build
+   output and writes the base path itself. It also inlines the @font-face into the
+   document head, so the face is known before first paint. */
 
 *,
 *::before,

@@ -50,7 +50,9 @@
      the file is used whatever weight is requested. Heavy is a step above Bold,
      so it reads bolder, not lighter. Drop a Futura Bold .otf into
      /public/fonts and add a second @font-face in base.css to change this. */
-  --font-display: "Futura Display", "Futura", "Century Gothic", sans-serif;
+  /* --font-futura is supplied by next/font/local in layout.tsx, which owns the
+     @font-face and the hashed URL of the .otf. */
+  --font-display: var(--font-futura), "Futura", "Century Gothic", sans-serif;
   --font-body: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 
   /* The wordmark. */

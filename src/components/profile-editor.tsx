@@ -12,6 +12,7 @@ import {
   rankOf,
   type Gender,
 } from "@/lib/dubr";
+import { DEFAULT_AVATAR } from "@/lib/asset";
 
 /** Caps the date picker: you cannot have been born tomorrow. Computed once at
     module load — a birthday input does not need to notice midnight. */
@@ -116,11 +117,11 @@ export function ProfileEditor({ onDone }: { onDone: () => void }) {
         </button>
 
         {/* Only offered once there is something to revert TO. */}
-        {draft.avatar !== "/avatar.jpg" && (
+        {draft.avatar !== DEFAULT_AVATAR && (
           <button
             type="button"
             className="editor__clear"
-            onClick={() => set("avatar", "/avatar.jpg")}
+            onClick={() => set("avatar", DEFAULT_AVATAR)}
           >
             Remove photo
           </button>
