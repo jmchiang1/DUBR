@@ -1675,6 +1675,14 @@
   align-items: stretch;
   gap: var(--gap-sm);
   max-width: 560px;
+  /* The toolbar OWNS a stacking context, above the results below it.
+     `.rise` animates a transform, and a transform creates a stacking context —
+     so the popover's own z-index is trapped inside the toolbar's context, and
+     the results list (which also gets `.rise`, and comes later in the DOM)
+     painted straight over the open panel. The controls were there and visible,
+     but every click landed on a player card behind them. */
+  position: relative;
+  z-index: 20;
 }
 
 .filter-btn {
@@ -1809,17 +1817,6 @@
   padding: var(--gap-md);
 }
 
-.filters__head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: var(--gap);
-  margin-bottom: var(--gap-md);
-}
-
-.filters__title {
-  font-size: 15px;
-}
 
 .filters__reset {
   font-size: 12px;
@@ -1876,6 +1873,43 @@
 .filters__ticks {
   /* Seven numbers over the 2–8 scale, each sitting under its own step. */
   margin-top: 6px;
+}
+
+/* A row of mutually exclusive pills. Used for event kind, where a segmented
+   control would run off the panel at five options. */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: var(--gap-sm);
+}
+
+.pill {
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: rgba(0, 12, 67, 0.35);
+  font-size: 12px;
+  color: var(--mute);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.pill:hover {
+  color: var(--bone);
+}
+
+.pill.is-active {
+  background: var(--aqua);
+  border-color: var(--aqua);
+  color: var(--on-aqua);
+  font-weight: 600;
+}
+
+/* Checkboxes that read as sentences stack; short ones sit in a row. */
+.checks--stack {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 .filters__warn {
